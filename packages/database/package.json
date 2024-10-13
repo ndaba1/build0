@@ -1,0 +1,32 @@
+{
+  "name": "@repo/database",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "push": "sst shell drizzle-kit push"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.25.0",
+    "tsx": "^4.19.1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-rds-data": "^3.670.0",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.34.1",
+    "drizzle-zod": "^0.5.1",
+    "pg": "^8.13.0",
+    "zod": "^3.23.8"
+  }
+}
