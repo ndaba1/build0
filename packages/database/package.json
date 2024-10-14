@@ -9,7 +9,8 @@
     "./schema": "./src/schema.ts"
   },
   "scripts": {
-    "push": "sst shell drizzle-kit push"
+    "db:push": "sst shell drizzle-kit push",
+    "db:studio": "sst shell drizzle-kit studio"
   },
   "keywords": [],
   "author": "",

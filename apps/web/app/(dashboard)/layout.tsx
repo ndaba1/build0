@@ -1,5 +1,6 @@
+import logo from "@/assets/logo.png";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { SparklesIcon } from "lucide-react";
+import Image from "next/image";
 import React from "react";
 import { DashboardNavigation } from "./navigation";
 
@@ -17,6 +18,24 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function SlashSeparator() {
+  return (
+    <svg
+      className="stroke-muted-foreground/40"
+      height="28"
+      shapeRendering="geometricPrecision"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1"
+      viewBox="0 0 24 24"
+      width="28"
+    >
+      <path d="M16.88 3.549L7.12 20.451" />
+    </svg>
+  );
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -25,9 +44,13 @@ export default function DashboardLayout({
   return (
     <main className="w-screen h-full">
       <header className="w-full z-20 h-16 border-b bg-white sticky top-0">
-        <div className="mx-auto max-w-7xl p-4 h-full flex items-center gap-8">
+        <div className="mx-auto max-w-7xl p-4 h-full flex items-center">
           <div className="inline-flex items-center">
-            <SparklesIcon className="w-7 h-7 mr-2 text-primary" />
+            <Image src={logo} alt="Logo" width={40} height={40} />
+          </div>
+
+          <div className="mx-4">
+            <SlashSeparator />
           </div>
 
           <DashboardNavigation />
@@ -44,7 +67,7 @@ export default function DashboardLayout({
           </div>
         </div>
       </header>
-      <div className="mx-auto max-w-7xl p-4 py-8 sm:py-12">{children}</div>;
+      <div className="">{children}</div>;
     </main>
   );
 }

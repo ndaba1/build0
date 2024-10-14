@@ -5,6 +5,10 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
+    "BuildZeroBucket": {
+      "name": string
+      "type": "sst.aws.Bucket"
+    }
     "BuildZeroDatabase": {
       "database": string
       "host": string

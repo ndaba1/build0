@@ -66,7 +66,9 @@ export const templates = pgTable(
     version: integer("version").notNull().default(1),
     payloadSchema: jsonb("payload_schema").notNull(),
     description: text("description"),
-    documentTypeId: text("document_type_id").notNull(),
+    documentTypeId: text("document_type_id")
+      .notNull()
+      .references(() => documentTypes.id),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at", {
       mode: "date",
@@ -87,6 +89,8 @@ export const templates = pgTable(
     documentTypeIndex: index("template_doc_type_idx").on(t.documentTypeId),
   })
 );
+
+export type Template = typeof templates.$inferSelect;
 
 export const getTemplateSchema = createSelectSchema(templates, {
   createdAt: z.string(),
@@ -113,23 +117,14 @@ export const jobs = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
-    templateId: text("template_id").notNull(),
+    templateId: text("template_id")
+      .notNull()
+      .references(() => templates.id),
     templateVersion: integer("template_version").notNull(),
     templateVariables: jsonb("template_variables").notNull(),
     status: text("status").notNull().default("PENDING"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "date",
-      withTimezone: true,
-    }).$onUpdate(() => new Date()),
-    startedAt: timestamp("started_at", {
-      mode: "date",
-      withTimezone: true,
-    }),
-    completedAt: timestamp("completed_at", {
-      mode: "date",
-      withTimezone: true,
-    }),
+    startedAt: timestamp("started_at").defaultNow().notNull(),
+    endedAt: timestamp("ended_at"),
     retries: integer("retries").notNull().default(0),
     errorMessage: text("error_message"),
   },
@@ -138,15 +133,39 @@ export const jobs = pgTable(
   })
 );
 
+export const createJobSchema = createInsertSchema(jobs).omit({
+  id: true,
+  startedAt: true,
+  endedAt: true,
+  retries: true,
+  errorMessage: true,
+});
+
+export const getJobSchema = createSelectSchema(jobs, {
+  startedAt: z.string(),
+  endedAt: z.string(),
+})
+  .omit({
+    templateVariables: true,
+  })
+  .extend({
+    template: getTemplateSchema,
+  });
+
+export const listJobsSchema = getJobSchema.array();
+
 export const documents = pgTable(
   "documents",
   {
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
-    templateId: text("template_id").notNull(),
+    templateId: text("template_id")
+      .notNull()
+      .references(() => templates.id),
     templateVersion: integer("template_version").notNull(),
     templateVariables: jsonb("template_variables").notNull(),
+    s3Key: text("s3_key").notNull(),
     document_url: text("url").notNull(),
     preview_url: text("preview_url"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -160,6 +179,15 @@ export const documents = pgTable(
     templateIdIndex: index("doc_template_id_idx").on(t.templateId),
   })
 );
+
+export type TDocument = typeof documents.$inferSelect;
+
+export const createDocumentSchema = createInsertSchema(documents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  isDeleted: true,
+});
 
 export const tokens = pgTable(
   "tokens",

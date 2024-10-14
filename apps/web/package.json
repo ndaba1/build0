@@ -11,6 +11,8 @@
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.2.21",
     "@aws-amplify/ui-react": "^6.5.3",
+    "@aws-sdk/client-s3": "^3.670.0",
+    "@aws-sdk/s3-request-presigner": "^3.670.0",
     "@formkit/auto-animate": "^0.8.2",
     "@hookform/resolvers": "^3.9.0",
     "@monaco-editor/react": "^4.6.0",
@@ -29,11 +31,12 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "isolated-vm": "^5.0.1",
     "lucide-react": "^0.452.0",
     "monaco-editor": "^0.52.0",
     "nanoid": "^5.0.7",
     "next": "14.2.15",
-    "next-auth": "5.0.0-beta.22",
+    "nextjs-toploader": "^3.7.15",
     "pdfmake": "^0.2.14",
     "react": "^18",
     "react-dom": "^18",
@@ -46,7 +49,6 @@
     "use-debounce": "^10.0.3",
     "vaul": "^1.0.0",
     "zod": "^3.23.8",
-    "zod-error": "^1.5.0",
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {

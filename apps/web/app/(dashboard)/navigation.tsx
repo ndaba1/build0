@@ -9,7 +9,7 @@ export function DashboardNavigation() {
   const links = [
     {
       name: "Dashboard",
-      href: "/home",
+      href: "/",
     },
     {
       name: "Jobs",
@@ -37,9 +37,11 @@ export function DashboardNavigation() {
           key={link.href}
           className={cn(
             `underline-offset-[24px] decoration-[2px] cursor-pointer transition-colors`,
-            pathname.includes(link.href)
+            link.href === "/"
+              ? pathname === "/"
+              : pathname.includes(link.href)
               ? "underline font-medium text-foreground decoration-primary"
-              : "hover:underline decoration-muted-foreground/40 hover:text-muted-foreground"
+              : "hover:underline decoration-muted-foreground/40 hover:text-foreground"
           )}
         >
           {link.name}

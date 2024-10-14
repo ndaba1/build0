@@ -7,6 +7,10 @@ const jiti = createJiti(fileURLToPath(import.meta.url));
 jiti("./env");
 
 /** @type {import('next').NextConfig} */
-const nextConfig = withTypedHandlers({});
+const nextConfig = withTypedHandlers({
+  experimental: {
+    serverComponentsExternalPackages: ["pdfmake"],
+  },
+});
 
 export default nextConfig;
