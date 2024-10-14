@@ -7,7 +7,6 @@ import { useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -15,15 +14,22 @@ import {
 
 import { TSEditor, useTsEditor } from "@/components/editor";
 import { Button } from "@/components/ui/button";
+import { Template, patchTemplateSchema } from "@repo/database/schema";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import { ChevronLeftIcon } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { handle } from "typed-handlers";
 import { VariablesEditor } from "./variables";
 
 // Register fonts with pdfMake
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-export default function Home() {
+export function TemplateEditor({ template }: { template: Template }) {
+  const router = useRouter();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const { tsCode, setTsCode, onMount, monaco } = useTsEditor({
+  const { jsCode, tsCode, setTsCode, onMount, monaco } = useTsEditor({
     generatePdf(docDefinition) {
       pdfMake.createPdf(docDefinition).getBlob((blob) => {
         const url = URL.createObjectURL(blob);
@@ -35,6 +41,25 @@ export default function Home() {
           return url;
         });
       });
+    },
+    initialCode: template.rawFunctionDefinition,
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (code: { jsCode: string; tsCode: string }) => {
+      const cfg = handle("/api/v1/templates/[id]", {
+        params: { id: template.id },
+        bodySchema: patchTemplateSchema,
+      });
+
+      await axios.patch(
+        cfg.url,
+        cfg.body({
+          functionDefinition: code.jsCode,
+          rawFunctionDefinition: code.tsCode,
+        })
+      );
+      router.refresh();
     },
   });
 
@@ -53,27 +78,36 @@ export default function Home() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="text-base">
-                <BreadcrumbLink href="/">Build Zero</BreadcrumbLink>
+                <Link href="/templates">Templates</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem className="text-base">
-                <BreadcrumbLink href="/components">Templates</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem className="text-base">
-                <BreadcrumbPage>Invoices</BreadcrumbPage>
+                <BreadcrumbPage>{template.name}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
           <div className="ml-auto inline-flex gap-6">
-            <VariablesEditor monaco={monaco} />
+            <VariablesEditor monaco={monaco} template={template} />
+
+            <Button
+              disabled={isPending}
+              size="sm"
+              onClick={() => {
+                mutate({ jsCode: jsCode || "", tsCode });
+              }}
+            >
+              Save
+            </Button>
           </div>
         </header>
 
         <TSEditor
           onMount={onMount}
           value={tsCode}
+          options={{
+            readOnly: isPending,
+          }}
           onChange={(value) => {
             setTsCode(value || "");
           }}

@@ -39,7 +39,7 @@ function previewCreatorPage(url: string) {
           pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
   
           (async () => {
-              const pdf = await pdfjsLib.getDocument("http://localhost:3000/api/v1/download/rszgwnesg6i7e3zpbt1c0n36?type=file").promise;
+              const pdf = await pdfjsLib.getDocument("${url}").promise;
               const page = await pdf.getPage(1);
   
               const viewport = page.getViewport({ scale: 1 });

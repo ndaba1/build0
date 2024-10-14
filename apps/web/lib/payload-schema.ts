@@ -60,6 +60,13 @@ export function generatePayloadSchema(
       };
     });
 
+    // remove keys that are not in the payload
+    Object.keys(schema).forEach((key) => {
+      if (!input[key]) {
+        delete schema[key as keyof BasePayload];
+      }
+    });
+
     return schema;
   } catch (e) {
     console.error(e);

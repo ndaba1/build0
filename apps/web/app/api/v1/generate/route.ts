@@ -79,7 +79,7 @@ export const POST = withAuth(async ({ req }) => {
     const s3Url = await uploadPdfToS3(pdfBuffer, s3Key);
 
     // complete job
-    await completeJob(job.id, {
+    const doc = await completeJob(job.id, {
       s3Key,
       jobId: job.id,
       document_url: s3Url,
@@ -88,7 +88,11 @@ export const POST = withAuth(async ({ req }) => {
       templateVariables: data,
     });
 
-    return NextResponse.json({ url: s3Url, success: true });
+    return NextResponse.json({
+      success: true,
+      url: `http://localhost:3000/api/v1/download/${doc.id}`,
+      preview: `http://localhost:3000/api/v1/download/${doc.id}?type=preview`,
+    });
   } catch (e) {
     if (e instanceof z.ZodError) {
       const validationError = fromError(e);
@@ -146,6 +150,8 @@ async function completeJob(
       })
       .where(eq(templates.id, doc.templateId)),
   ]);
+
+  return entry;
 }
 
 async function failJob(jobId: string, errorMessage: string) {

@@ -1,4 +1,4 @@
-import { documentTypeDefs } from "@/app/(editor)/editor/definitions";
+import { documentTypeDefs } from "@/app/(editor)/editor/[id]/definitions";
 import { cn } from "@/lib/utils";
 import { Editor } from "@monaco-editor/react";
 import Monaco from "monaco-editor/esm/vs/editor/editor.api";

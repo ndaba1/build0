@@ -1,14 +1,14 @@
 import { createId } from "@paralleldrive/cuid2";
 import { relations } from "drizzle-orm";
 import {
-    boolean,
-    index,
-    integer,
-    jsonb,
-    pgEnum,
-    pgTable,
-    text,
-    timestamp,
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -99,13 +99,27 @@ export const getTemplateSchema = createSelectSchema(templates, {
   createdAt: z.string(),
   updatedAt: z.string(),
   payloadSchema: z.record(z.string(), z.any()),
+}).extend({
+  documentType: getDocumentTypeSchema,
 });
+
 export const listTemplateSchema = getTemplateSchema.array();
 export const createTemplateSchema = createInsertSchema(templates).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
+export const patchTemplateSchema = createInsertSchema(templates)
+  .partial()
+  .omit({
+    id: true,
+    name: true,
+    documentFormat: true,
+    lastGeneratedAt: true,
+    generationCount: true,
+    createdAt: true,
+    updatedAt: true,
+  });
 
 export const templateRelations = relations(templates, ({ one }) => ({
   documentType: one(documentTypes, {

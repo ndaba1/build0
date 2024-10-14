@@ -8,26 +8,48 @@ import { z } from "zod";
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+import { Button } from "@/components/ui/button";
 import {
   BasePayload,
   generatePayloadSchema,
   payloadSchema,
   payloadSchemaToInterface,
 } from "@/lib/payload-schema";
+import { Template, patchTemplateSchema } from "@repo/database/schema";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import { SquareTerminalIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { handle } from "typed-handlers";
 
-export function VariablesEditor({ monaco }: { monaco?: typeof Monaco | null }) {
+export function VariablesEditor({
+  monaco,
+  template,
+}: {
+  monaco?: typeof Monaco | null;
+  template: Template;
+}) {
+  const router = useRouter();
+  const [show, setShow] = useState(false);
   const [schema, setSchema] = useState<z.infer<typeof payloadSchema>>(
-    {} as BasePayload
+    (template.payloadSchema || {}) as BasePayload
   );
   const [samplePayload, setSamplePayload] = useState<string>("{}");
 
   useEffect(() => {
+    try {
+      if (Object.keys(JSON.parse(samplePayload)).length === 0) return;
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+
     setSchema(
       (prev) =>
         ({
@@ -44,8 +66,21 @@ export function VariablesEditor({ monaco }: { monaco?: typeof Monaco | null }) {
     monaco.languages.typescript.getTypeScriptWorker(); // -> trigger worker initialization
   }, [monaco, schema]);
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (payloadSchema: BasePayload) => {
+      const cfg = handle("/api/v1/templates/[id]", {
+        params: { id: template.id },
+        bodySchema: patchTemplateSchema,
+      });
+
+      await axios.patch(cfg.url, cfg.body({ payloadSchema }));
+      router.refresh();
+      setShow(false);
+    },
+  });
+
   return (
-    <Sheet>
+    <Sheet open={show} onOpenChange={setShow}>
       <SheetTrigger>
         <SquareTerminalIcon className="w-6 h-6 text-muted-foreground" />
       </SheetTrigger>
@@ -58,7 +93,7 @@ export function VariablesEditor({ monaco }: { monaco?: typeof Monaco | null }) {
           <div className="space-y-0.5">
             <h1 className="font-medium">Sample Payload</h1>
             <p className="text-muted-foreground text-sm">
-              Paste a sample payload here to generate a schema for your
+              Paste a sample payload here to update/generate a schema for your
               template&apos;s variables
             </p>
           </div>
@@ -69,6 +104,7 @@ export function VariablesEditor({ monaco }: { monaco?: typeof Monaco | null }) {
             height={300}
             options={{
               codeLens: false,
+              readOnly: isPending,
               fontFamily: "Menlo, Consolas, monospace, sans-serif",
               quickSuggestions: false,
               renderValidationDecorations: "off",
@@ -100,6 +136,7 @@ export function VariablesEditor({ monaco }: { monaco?: typeof Monaco | null }) {
             height={300}
             options={{
               codeLens: false,
+              readOnly: isPending,
               fontFamily: "Menlo, Consolas, monospace, sans-serif",
               quickSuggestions: false,
               renderValidationDecorations: "off",
@@ -123,6 +160,17 @@ export function VariablesEditor({ monaco }: { monaco?: typeof Monaco | null }) {
             }}
           />
         </div>
+
+        <SheetFooter>
+          <Button
+            disabled={isPending}
+            onClick={() => mutate(schema)}
+            className="w-full"
+            variant="default"
+          >
+            Save Changes
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
