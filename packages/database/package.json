@@ -9,6 +9,7 @@
     "./schema": "./src/schema.ts"
   },
   "scripts": {
+    "db": "sst shell drizzle-kit generate",
     "db:push": "sst shell drizzle-kit push",
     "db:studio": "sst shell drizzle-kit studio"
   },
