@@ -17,6 +17,10 @@ declare module "sst" {
       "type": "sst.aws.Postgres"
       "username": string
     }
+    "BuildZeroImageBucket": {
+      "name": string
+      "type": "sst.aws.Bucket"
+    }
     "BuildZeroUserPool": {
       "poolId": string
       "type": "aws.cognito/userPool.UserPool"

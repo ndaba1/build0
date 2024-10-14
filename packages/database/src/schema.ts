@@ -5,12 +5,15 @@ import {
   index,
   integer,
   jsonb,
+  pgEnum,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+
+export const documentFormats = pgEnum("document_formats", ["PDF"]);
 
 export const variables = pgTable("variables", {
   id: text("id")
@@ -66,6 +69,7 @@ export const templates = pgTable(
     version: integer("version").notNull().default(1),
     payloadSchema: jsonb("payload_schema").notNull(),
     description: text("description"),
+    documentFormat: documentFormats(),
     documentTypeId: text("document_type_id")
       .notNull()
       .references(() => documentTypes.id),
@@ -121,6 +125,7 @@ export const jobs = pgTable(
       .notNull()
       .references(() => templates.id),
     templateVersion: integer("template_version").notNull(),
+    documentId: text("document_id"),
     templateVariables: jsonb("template_variables").notNull(),
     status: text("status").notNull().default("PENDING"),
     startedAt: timestamp("started_at").defaultNow().notNull(),
@@ -132,6 +137,13 @@ export const jobs = pgTable(
     templateIdIndex: index("job_template_id_idx").on(t.templateId),
   })
 );
+
+export const jobRelations = relations(jobs, ({ one }) => ({
+  template: one(templates, {
+    fields: [jobs.templateId],
+    references: [templates.id],
+  }),
+}));
 
 export const createJobSchema = createInsertSchema(jobs).omit({
   id: true,
@@ -160,6 +172,9 @@ export const documents = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
+    jobId: text("job_id")
+      .notNull()
+      .references(() => jobs.id),
     templateId: text("template_id")
       .notNull()
       .references(() => templates.id),
@@ -169,16 +184,25 @@ export const documents = pgTable(
     document_url: text("url").notNull(),
     preview_url: text("preview_url"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "date",
-      withTimezone: true,
-    }).$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
     isDeleted: boolean("is_deleted").notNull().default(false),
   },
   (t) => ({
+    jobIdIndex: index("job_id_idx").on(t.jobId),
     templateIdIndex: index("doc_template_id_idx").on(t.templateId),
   })
 );
+
+export const documentsRelations = relations(documents, ({ one }) => ({
+  job: one(jobs, {
+    fields: [documents.jobId],
+    references: [jobs.id],
+  }),
+  template: one(templates, {
+    fields: [documents.templateId],
+    references: [templates.id],
+  }),
+}));
 
 export type TDocument = typeof documents.$inferSelect;
 

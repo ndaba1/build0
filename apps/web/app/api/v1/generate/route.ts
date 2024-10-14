@@ -2,7 +2,7 @@ import { payloadSchemaToZod, type PayloadSchema } from "@/lib/payload-schema";
 import { throwError } from "@/lib/throw-error";
 import { withAuth } from "@/lib/with-auth";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { eq } from "@repo/database";
+import { eq, sql } from "@repo/database";
 import { db } from "@repo/database/client";
 import {
   Template,
@@ -22,10 +22,10 @@ import { fromError } from "zod-validation-error";
 // Define fonts
 const fonts = {
   Roboto: {
-    normal: path.join(__dirname, "fonts/Roboto-Regular.ttf"),
-    bold: path.join(__dirname, "fonts/Roboto-Medium.ttf"),
-    italics: path.join(__dirname, "fonts/Roboto-Italic.ttf"),
-    bolditalics: path.join(__dirname, "fonts/Roboto-MediumItalic.ttf"),
+    normal: path.join(process.cwd(), "fonts/Roboto-Regular.ttf"),
+    bold: path.join(process.cwd(), "fonts/Roboto-Medium.ttf"),
+    italics: path.join(process.cwd(), "fonts/Roboto-Italic.ttf"),
+    bolditalics: path.join(process.cwd(), "fonts/Roboto-MediumItalic.ttf"),
   },
 };
 
@@ -75,12 +75,13 @@ export const POST = withAuth(async ({ req }) => {
     const docDefinition = generateFunc(data);
     const pdfBuffer = await generatePdfBuffer(docDefinition);
 
-    const s3Key = `${template.s3PathPrefix}/${job.id}.pdf`;
+    const s3Key = `${template.s3PathPrefix?.replace(/^\//g, "")}/${job.id}.pdf`;
     const s3Url = await uploadPdfToS3(pdfBuffer, s3Key);
 
     // complete job
     await completeJob(job.id, {
       s3Key,
+      jobId: job.id,
       document_url: s3Url,
       templateId: template.id,
       templateVersion: template.version,
@@ -124,16 +125,27 @@ async function completeJob(
   jobId: string,
   doc: z.infer<typeof createDocumentSchema>
 ) {
-  await db.insert(documents).values(doc);
+  const res = await db.insert(documents).values(doc).returning();
+  const entry = res[0];
 
   // must wait for doc before completing job
-  await db
-    .update(jobs)
-    .set({
-      status: "COMPLETED",
-      endedAt: new Date(),
-    })
-    .where(eq(jobs.id, jobId));
+  await Promise.all([
+    db
+      .update(jobs)
+      .set({
+        status: "COMPLETED",
+        endedAt: new Date(),
+        documentId: entry.id,
+      })
+      .where(eq(jobs.id, jobId)),
+    db
+      .update(templates)
+      .set({
+        lastGeneratedAt: new Date(),
+        generationCount: sql`${templates.generationCount} + 1`,
+      })
+      .where(eq(templates.id, doc.templateId)),
+  ]);
 }
 
 async function failJob(jobId: string, errorMessage: string) {
@@ -184,5 +196,5 @@ async function uploadPdfToS3(buffer: Buffer, key: string): Promise<string> {
   const client = new S3Client({});
   await client.send(command);
 
-  return `https://${Resource.BuildZeroBucket.name}.s3.amazonaws.com${key}`;
+  return `https://${Resource.BuildZeroBucket.name}.s3.amazonaws.com/${key}`;
 }
