@@ -8,11 +8,9 @@ import { cn } from "@/lib/utils";
 import { listJobsSchema } from "@repo/database/schema";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import {
-  formatDistanceToNowStrict
-} from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { format } from "date-fns/format";
-import { FileScanIcon, MoreVerticalIcon } from "lucide-react";
+import { FileScanIcon, FileTextIcon, MoreVerticalIcon } from "lucide-react";
 import { handle } from "typed-handlers";
 import { z } from "zod";
 
@@ -69,7 +67,7 @@ export default function Jobs() {
       ) : null}
 
       {data?.length ? (
-        <Card className="rounded-xl my-8">
+        <Card className="rounded-2xl my-8">
           {data.map((job, idx) => {
             const startedAt = Date.parse(job.startedAt);
             const endedAt = job.endedAt ? Date.parse(job.endedAt) : null;
@@ -93,15 +91,21 @@ export default function Jobs() {
                   idx !== 0 && "border-t"
                 )}
               >
-                <div className="col-span-5">
-                  <p className="text-foreground mb-1 font-medium">
-                    {job.template.name}
-                  </p>
+                <div className="col-span-6 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-muted border flex items-center justify-center">
+                    <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+                  </div>
 
-                  <p className="text-muted-foreground text-sm">{job.id}</p>
+                  <div>
+                    <p className="text-foreground mb-0.5 font-medium">
+                      {job.template.name}
+                    </p>
+
+                    <p className="text-muted-foreground text-sm">{job.id}</p>
+                  </div>
                 </div>
 
-                <div className="col-span-2">
+                <div className="col-span-3">
                   {job.status === "PENDING" ? (
                     <SmallBadge className="border-yellow-200 bg-yellow-100/80 text-yellow-600">
                       Pending
@@ -122,7 +126,7 @@ export default function Jobs() {
                   </p>
                 </div>
 
-                <div className="col-span-5 justify-end inline-flex items-center gap-4">
+                <div className="col-span-3 justify-end inline-flex items-center gap-4">
                   <Button size="sm" variant="outline" className="py-0">
                     View Job
                   </Button>

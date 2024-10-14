@@ -1,6 +1,11 @@
 import { withAuth } from "@/lib/with-auth";
+import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
-import { createTemplateSchema, templates } from "@repo/database/schema";
+import {
+  createTemplateSchema,
+  documentTypes,
+  templates,
+} from "@repo/database/schema";
 import { NextResponse } from "next/server";
 import { ZodAny, z } from "zod";
 
@@ -22,7 +27,19 @@ export const POST = withAuth(async ({ req }) => {
 });
 
 export const GET = withAuth(async ({ req }) => {
-  const res = await db.select().from(templates);
+  const res = await db
+    .select({
+      id: templates.id,
+      name: templates.name,
+      isActive: templates.isActive,
+      version: templates.version,
+      createdAt: templates.createdAt,
+      lastGeneratedAt: templates.lastGeneratedAt,
+      generationCount: templates.generationCount,
+      documentType: documentTypes,
+    })
+    .from(templates)
+    .leftJoin(documentTypes, eq(documentTypes.id, templates.documentTypeId));
 
-  return NextResponse.json(res);
+  return NextResponse.json({ templates: res });
 });
