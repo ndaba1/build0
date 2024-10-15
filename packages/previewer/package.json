@@ -14,7 +14,8 @@
     "@aws-sdk/s3-request-presigner": "^3.670.0",
     "@repo/database": "workspace:^",
     "@sparticuz/chromium": "^129.0.0",
-    "puppeteer-core": "^23.5.3"
+    "puppeteer-core": "^23.5.3",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.145"

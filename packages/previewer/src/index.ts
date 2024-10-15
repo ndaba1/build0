@@ -1,11 +1,12 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
-import { documents } from "@repo/database/schema";
+import { documents, jobs } from "@repo/database/schema";
 import chromium from "@sparticuz/chromium";
 import { S3Event } from "aws-lambda";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
+import { ZodAny, z } from "zod";
 
 function previewCreatorPage(url: string) {
   return `
@@ -98,41 +99,95 @@ async function generatePdfPreview(pdfUrl: string) {
 export const handler = async (event: S3Event) => {
   await Promise.all(
     event.Records.map(async (record) => {
-      const key = record.s3.object.key; // i.e invoices/123.pdf
-      const parts = key.split("/");
-      const filename = parts[parts.length - 1];
-      const jobId = filename.split(".")[0];
+      let imageJobId: string | undefined;
 
-      const res = await db
-        .select()
-        .from(documents)
-        .where(eq(documents.jobId, jobId));
-      const document = res[0];
+      try {
+        const key = record.s3.object.key; // i.e invoices/123.pdf
+        const parts = key.split("/");
+        const filename = parts[parts.length - 1];
+        const refJobId = filename.split(".")[0];
 
-      const pdfUrl = `${process.env.APP_URL}/api/v1/download/${document.id}?type=file`;
-      const screenshot = await generatePdfPreview(pdfUrl);
+        // start job
+        const pdfJobRes = await db
+          .select()
+          .from(jobs)
+          .where(eq(jobs.id, refJobId));
+        const pdfJob = pdfJobRes[0];
 
-      // image logic
-      const client = new S3Client({});
-      const imageBucket = Resource.BuildZeroImageBucket.name;
-      const putCommand = new PutObjectCommand({
-        Bucket: imageBucket,
-        Key: `${key}.png`,
-        Body: screenshot,
-        ContentType: "image/png",
-      });
-      await client.send(putCommand);
+        if (!pdfJob) {
+          throw new Error(`Job ${refJobId} not found`);
+        }
 
-      await db
-        .update(documents)
-        .set({
-          preview_url: `${process.env.APP_URL}/api/v1/download/${document.id}?type=preview`,
-        })
-        .where(eq(documents.jobId, jobId));
+        if (pdfJob.status !== "COMPLETED") {
+          throw new Error(`Job ${refJobId} is not completed`);
+        }
 
-      console.log(
-        `Updated document ${document.id} with preview url ${document.preview_url}`
-      );
+        const jobRes = await db
+          .insert(jobs)
+          .values({
+            status: "PENDING",
+            startedAt: new Date(),
+            templateId: pdfJob.templateId,
+            templateVersion: pdfJob.templateVersion,
+            templateVariables: {},
+            targetFormat: "IMAGE",
+          })
+          .returning();
+        const job = jobRes[0];
+        imageJobId = job.id;
+
+        const res = await db
+          .select()
+          .from(documents)
+          .where(eq(documents.jobId, refJobId));
+        const document = res[0];
+
+        const pdfUrl = `${process.env.APP_URL}/api/v1/download/${document.id}?type=file`;
+        const screenshot = await generatePdfPreview(pdfUrl);
+
+        // image logic
+        const client = new S3Client({});
+        const imageBucket = Resource.BuildZeroImageBucket.name;
+        const putCommand = new PutObjectCommand({
+          Bucket: imageBucket,
+          Key: `${key}.png`,
+          Body: screenshot,
+          ContentType: "image/png",
+        });
+        await client.send(putCommand);
+
+        await db
+          .update(documents)
+          .set({
+            preview_url: `${process.env.APP_URL}/api/v1/download/${document.id}?type=preview`,
+          })
+          .where(eq(documents.jobId, refJobId));
+
+        console.log(
+          `Updated document ${document.id} with preview url ${document.preview_url}`
+        );
+
+        // complete job
+        await db
+          .update(jobs)
+          .set({
+            status: "COMPLETED",
+            endedAt: new Date(),
+          })
+          .where(eq(jobs.id, job.id));
+      } catch (e) {
+        console.error(e);
+
+        if (imageJobId) {
+          await db
+            .update(jobs)
+            .set({
+              status: "FAILED",
+              errorMessage: (e as z.infer<ZodAny>).message,
+            })
+            .where(eq(jobs.id, imageJobId));
+        }
+      }
     })
   );
 

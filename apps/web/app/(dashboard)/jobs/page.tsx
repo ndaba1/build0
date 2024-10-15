@@ -10,7 +10,13 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { formatDistanceToNowStrict } from "date-fns";
 import { format } from "date-fns/format";
-import { FileScanIcon, FileTextIcon, MoreVerticalIcon } from "lucide-react";
+import {
+  DotIcon,
+  FileImageIcon,
+  FileScanIcon,
+  FileTextIcon,
+  MoreVerticalIcon,
+} from "lucide-react";
 import { handle } from "typed-handlers";
 import { z } from "zod";
 
@@ -93,7 +99,11 @@ export default function Jobs() {
               >
                 <div className="col-span-6 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-muted border flex items-center justify-center">
-                    <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+                    {job.targetFormat === "IMAGE" ? (
+                      <FileImageIcon className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </div>
 
                   <div>
@@ -101,7 +111,16 @@ export default function Jobs() {
                       {job.template.name}
                     </p>
 
-                    <p className="text-muted-foreground text-sm">{job.id}</p>
+                    <div className="flex items-center">
+                      <p className="text-muted-foreground w-[180px] overflow-hidden text-ellipsis text-sm whitespace-nowrap">
+                        {job.id}
+                      </p>
+
+                      <DotIcon className="w-4 h-4 text-muted-foreground mr-1" />
+                      <p className="text-muted-foreground text-sm">
+                        {(job.targetFormat || "PDF").toLowerCase()}
+                      </p>
+                    </div>
                   </div>
                 </div>
 

@@ -13,7 +13,7 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const documentFormats = pgEnum("document_formats", ["PDF"]);
+export const documentFormats = pgEnum("document_formats", ["PDF", "IMAGE"]);
 
 export const variables = pgTable("variables", {
   id: text("id")
@@ -69,7 +69,7 @@ export const templates = pgTable(
     version: integer("version").notNull().default(1),
     payloadSchema: jsonb("payload_schema").notNull(),
     description: text("description"),
-    documentFormat: documentFormats(),
+    documentFormat: documentFormats("document_format").default("PDF"),
     documentTypeId: text("document_type_id")
       .notNull()
       .references(() => documentTypes.id),

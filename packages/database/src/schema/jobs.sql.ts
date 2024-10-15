@@ -1,16 +1,16 @@
 import { createId } from "@paralleldrive/cuid2";
 import { relations } from "drizzle-orm";
 import {
-    index,
-    integer,
-    jsonb,
-    pgTable,
-    text,
-    timestamp,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { getTemplateSchema, templates } from "./templates.sql";
+import { documentFormats, getTemplateSchema, templates } from "./templates.sql";
 
 export const jobs = pgTable(
   "jobs",
@@ -23,6 +23,7 @@ export const jobs = pgTable(
       .references(() => templates.id),
     templateVersion: integer("template_version").notNull(),
     documentId: text("document_id"),
+    targetFormat: documentFormats("target_format").default("PDF"),
     templateVariables: jsonb("template_variables").notNull(),
     status: text("status").notNull().default("PENDING"),
     startedAt: timestamp("started_at").defaultNow().notNull(),
