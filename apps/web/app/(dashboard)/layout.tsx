@@ -1,6 +1,7 @@
 import logo from "@/assets/logo.png";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 import { DashboardNavigation } from "./navigation";
 
@@ -43,10 +44,10 @@ export default function DashboardLayout({
 }) {
   return (
     <main className="w-screen h-full">
-      <header className="w-full z-20 h-16 border-b bg-white sticky top-0">
+      <header className="w-full z-20 h-16 border-b bg-background sticky top-0">
         <div className="mx-auto max-w-7xl p-4 h-full flex items-center">
-          <div className="inline-flex items-center">
-            <Image src={logo} alt="Logo" width={40} height={40} />
+          <div className="inline-flex items-center justify-center rounded-md bg-white px-2">
+            <Image src={logo} alt="Logo" width={36} height={36} />
           </div>
 
           <div className="mx-4">
@@ -56,10 +57,13 @@ export default function DashboardLayout({
           <DashboardNavigation />
 
           <div className="ml-auto flex items-center gap-8">
-            <div className="flex items-center gap-2">
-              <GithubIcon className="w-5 h-5" />
+            <Link
+              href="https://github.com/ndaba1/build0"
+              className="flex items-center gap-2"
+            >
+              <GithubIcon className="w-5 h-5 dark:fill-white" />
               <span>Star on Github</span>
-            </div>
+            </Link>
             <Avatar>
               {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
               <AvatarFallback>CN</AvatarFallback>
@@ -67,7 +71,7 @@ export default function DashboardLayout({
           </div>
         </div>
       </header>
-      <div className="">{children}</div>;
+      <div className="">{children}</div>
     </main>
   );
 }

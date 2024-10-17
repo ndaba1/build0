@@ -126,14 +126,14 @@ export function payloadSchemaToZod(
         baseType = z.array(
           payloadSchemaToZod(type.schema as Record<string, BasePayload>)
         );
+      } else {
+        baseType =
+          type.schema === "boolean"
+            ? z.array(z.boolean())
+            : type.schema === "number"
+            ? z.array(z.number())
+            : z.array(z.string());
       }
-
-      baseType =
-        type.schema === "boolean"
-          ? z.array(z.boolean())
-          : type.schema === "number"
-          ? z.array(z.number())
-          : z.array(z.string());
     } else if (type.name === "object") {
       baseType = payloadSchemaToZod(type.schema as Record<string, BasePayload>);
     } else {

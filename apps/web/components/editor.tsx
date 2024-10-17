@@ -1,3 +1,5 @@
+"use client";
+
 import { documentTypeDefs } from "@/app/(editor)/editor/[id]/definitions";
 import { cn } from "@/lib/utils";
 import { Editor } from "@monaco-editor/react";
@@ -121,7 +123,7 @@ export function JsonEditor(props: React.ComponentProps<typeof Editor>) {
         renderValidationDecorations: "off",
         minimap: { enabled: false },
         fontSize: 14,
-        folding: false,
+        folding: true,
         wordWrap: "on",
         tabSize: 2,
         glyphMargin: false,

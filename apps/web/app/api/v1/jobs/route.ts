@@ -9,7 +9,7 @@ export const GET = withAuth(async () => {
     .select()
     .from(jobs)
     .limit(30)
-    .orderBy(desc(jobs.endedAt))
+    .orderBy(desc(jobs.startedAt))
     .leftJoin(templates, eq(jobs.templateId, templates.id));
 
   const data = res.map((j) => ({

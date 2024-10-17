@@ -12,6 +12,8 @@ export const GET = withAuth<Params<"/api/v1/download/[id]">>(
     const documentId = params.id;
     // valid values are "file" or "preview"
     const downloadType = req.nextUrl.searchParams.get("type") || "file";
+    const disposition =
+      req.nextUrl.searchParams.get("disposition") || "attachment";
     const isPreview = downloadType === "preview";
 
     if (!documentId) {
@@ -47,9 +49,9 @@ export const GET = withAuth<Params<"/api/v1/download/[id]">>(
     const headers = {
       "Content-Type": ContentType || fallbackContentType,
       "Content-Length": ContentLength?.toString() || "0",
-      "Content-Disposition": `attachment; filename="${documentId}.${
-        isPreview ? "png" : "pdf"
-      }"`,
+      "Content-Disposition": `${
+        disposition === "inline" ? "inline" : "attachment"
+      }; filename="${documentId}.${isPreview ? "png" : "pdf"}"`,
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET",
       "Access-Control-Allow-Headers": "Content-Type",

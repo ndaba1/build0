@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Roadmap
+- [x] Allow users to define pdfmake templates
+- [x] These templates are saved somewhere in the db and can accept variables
+- [ ] Have a simple sdk that allows users to generate pdfs using these templates
+- [x] Or even a rest API that allows users to generate pdfs using these templates
+- [ ] Logger service to show generation process
+- [x] S3 integration to pre-sign and upload/download said pdfs
+- [x] Image previews ???
 
-## Getting Started
+lets have the template generator be an editor where you can write a javascript function (generate) that returns a pdfmake template. This function can accept variables and return a template that uses these variables. The template can be saved in the db and used to generate pdfs. We can have certain global variables depending on the organization that can be used in the template. i.e logo url, organization name, etc.
+Integrate with monaco editor to see how to make the variables available.
 
-First, run the development server:
+Show a preview of the pdf template using pdfmake. This can be done by generating a pdf and showing it in an iframe.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+self hosted and deployed using sst ion.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- toploader
+- custom cognito scopes
+- custom fonts, brand colors in template form
+- mintlify and speakeasy
+- screenshot/previews of pdfs
+- shareable templates (with previews)
+- when storing templates, also store img preview
+- update template to include integration settings i.e knock workflow ?
+- load testing - many requests, many pages
+- going live ? existing vpc
+- preview generation also job - should be re-runnable. group 
+- webhooks ?
+- custom fonts ?????
+- integration with other services
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+1. Dashboard
+- [ ] plug into using actual data
+- [ ] update the bottom components
+- [ ] add date picker, enable filtering
 
-To learn more about Next.js, take a look at the following resources:
+1. Jobs tabs
+- [ ] paginate via infinite scroll/manual clicking
+- [ ] date picker, filtering
+- [ ] searching
+- [ ] BE - rerun jobs
+- [x] BE - job logs integration --> OUT OF SCOPE
+- [ ] BE - link to ref job
+- [x] sdk/api buttons
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Docs
+- [ ] sdk/api buttons
+- [ ] doc previews ?
+- [ ] download document
+- [ ] listing with pagination, filtering
+- [ ] doc search
+- [ ] more functionality
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Docs
+- [ ] edit template ?
+- [ ] preview template
+- [ ] BE - auto payload generation (for testing)
+- [ ] require document format
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Settings
+- [ ] workspace settings ?
+- [ ] account settings
+- [ ] BFE - user management
+- [ ] BFE - token management
+- [ ] BFE - Variables
+- [ ] FE - cleanup doc types table
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Auth
+- [ ] sign out
+- [ ] clean up
+- [ ] fix withAuth wrapper
+
+5. Others
+- [ ] External ID
+- [ ] Webhooks ?
+- [ ] workspaces, i.e make cloud viable

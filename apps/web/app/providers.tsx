@@ -24,7 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="w-full h-full min-h-screen bg-muted">
+    <div className="w-full h-full min-h-screen bg-muted/30">
       <ThemeProvider>
         <Authenticator hideSignUp>
           {() => (

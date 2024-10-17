@@ -29,6 +29,14 @@ export function DashboardNavigation() {
     },
   ];
 
+  function isActive(href: string) {
+    if (href === "/") {
+      return pathname === "/";
+    }
+
+    return pathname.startsWith(href);
+  }
+
   return (
     <nav className="flex items-center gap-8 text-muted-foreground/80">
       {links.map((link) => (
@@ -37,9 +45,7 @@ export function DashboardNavigation() {
           key={link.href}
           className={cn(
             `underline-offset-[24px] decoration-[2px] cursor-pointer transition-colors`,
-            link.href === "/"
-              ? pathname === "/"
-              : pathname.includes(link.href)
+            isActive(link.href)
               ? "underline font-medium text-foreground decoration-primary"
               : "hover:underline decoration-muted-foreground/40 hover:text-foreground"
           )}

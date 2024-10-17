@@ -53,6 +53,8 @@ export const jobLogs = pgTable(
   })
 );
 
+export type Job = typeof jobs.$inferSelect;
+
 export const jobRelations = relations(jobs, ({ one }) => ({
   template: one(templates, {
     fields: [jobs.templateId],
