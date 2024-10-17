@@ -10,14 +10,22 @@ const geistSans = localFont({
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
 });
 
+const calFont = localFont({
+  src: "./fonts/CalSans-SemiBold.woff2",
+  variable: "--font-cal",
+  preload: true,
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "BuildZero",
+  title: "BuildZero - Open source pdf generation tooling for focused teams",
   description: "Open source pdf generation tooling for focused teams",
 };
 
@@ -29,10 +37,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${calFont.variable} antialiased`}
       >
         <Providers>{children}</Providers>
-        <TopLoader />
+        <TopLoader showSpinner={false} />
       </body>
     </html>
   );

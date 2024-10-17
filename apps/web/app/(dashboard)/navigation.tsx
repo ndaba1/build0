@@ -9,7 +9,7 @@ export function DashboardNavigation() {
   const links = [
     {
       name: "Dashboard",
-      href: "/",
+      href: "/home",
     },
     {
       name: "Jobs",
@@ -30,8 +30,8 @@ export function DashboardNavigation() {
   ];
 
   function isActive(href: string) {
-    if (href === "/") {
-      return pathname === "/";
+    if (href === "/home") {
+      return pathname === "/home";
     }
 
     return pathname.startsWith(href);
