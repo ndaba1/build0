@@ -1,0 +1,22 @@
+{
+  "name": "@repo/cognito",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.145",
+    "@types/react": "^18"
+  },
+  "dependencies": {
+    "@react-email/render": "^1.0.1",
+    "@repo/database": "workspace:^",
+    "@repo/email": "workspace:^",
+    "react": "^18"
+  }
+}

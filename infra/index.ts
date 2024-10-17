@@ -1,5 +1,3 @@
-import * as auth from "./auth";
-
 export const docBucket = new sst.aws.Bucket("BuildZeroBucket");
 export const imageBucket = new sst.aws.Bucket("BuildZeroImageBucket");
 
@@ -25,28 +23,78 @@ const migrator = new sst.aws.Function("PostgresMigrator", {
   ],
 });
 
-new aws.lambda.Invocation("PostgresMigratorInvocation", {
+const invocation = new aws.lambda.Invocation("PostgresMigratorInvocation", {
   functionName: migrator.name,
   input: JSON.stringify({
     now: new Date().toISOString(),
   }),
 });
 
-export const website = new sst.aws.Nextjs("BuildZeroWeb", {
-  vpc,
-  link: [database, docBucket, imageBucket],
-  path: "apps/web",
-  domain: {
-    name: "build0.dev",
-    dns: sst.cloudflare.dns(),
-    aliases: ["api.build0.dev"],
-    redirects: ["www.build0.dev"],
+export const userPool = new sst.aws.CognitoUserPool(
+  "BuildZeroCognitoUserPool",
+  {
+    usernames: ["email"],
+    triggers: {
+      customMessage: {
+        vpc,
+        name: `BuildZeroCognitoCustomMessageFn-${$app.stage}`,
+        handler: "packages/cognito/src/custom-message/index.handler",
+        nodejs: {
+          esbuild: {
+            jsx: "transform", 
+          }
+        }
+      },
+      postConfirmation: {
+        vpc,
+        name: `BuildZeroCognitoPostConfirmationFn-${$app.stage}`,
+        handler: "packages/cognito/src/post-confirmation/index.handler",
+        link: [database],
+      },
+    },
+    transform: {
+      userPool(args) {
+        args.schemas = [
+          {
+            name: "email",
+            required: true,
+            mutable: true,
+            attributeDataType: "String",
+          },
+          {
+            name: "name",
+            required: true,
+            mutable: true,
+            attributeDataType: "String",
+          },
+        ];
+      },
+    },
+  }
+);
+
+export const userPoolClient = userPool.addClient("BuildZeroPoolWebClient");
+
+export const website = new sst.aws.Nextjs(
+  "BuildZeroWeb",
+  {
+    vpc,
+    link: [database, docBucket, imageBucket],
+    path: "apps/web",
+    domain: {
+      name: "build0.dev",
+      dns: sst.cloudflare.dns(),
+      aliases: ["api.build0.dev"],
+      redirects: ["www.build0.dev"],
+    },
+    environment: {
+      NEXT_PUBLIC_USER_POOL_ID: userPool.id,
+      NEXT_PUBLIC_USER_POOL_CLIENT_ID: userPoolClient.id,
+    },
   },
-  environment: {
-    NEXT_PUBLIC_USER_POOL_ID: auth.userPool.id,
-    NEXT_PUBLIC_USER_POOL_CLIENT_ID: auth.userPoolClient.id,
-  },
-});
+  // make sure migrations applied
+  { dependsOn: [invocation] }
+);
 
 docBucket.subscribe(
   {

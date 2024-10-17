@@ -9,6 +9,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
+    "BuildZeroCognitoUserPool": {
+      "id": string
+      "type": "sst.aws.CognitoUserPool"
+    }
     "BuildZeroDatabase": {
       "database": string
       "host": string
@@ -21,13 +25,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
-    "BuildZeroUserPool": {
-      "poolId": string
-      "type": "aws.cognito/userPool.UserPool"
-    }
-    "BuildZeroUserPoolClient": {
-      "clientId": string
-      "type": "aws.cognito/userPoolClient.UserPoolClient"
+    "BuildZeroPoolWebClient": {
+      "id": string
+      "secret": string
+      "type": "sst.aws.CognitoUserPoolClient"
     }
     "BuildZeroVpc": {
       "bastion": string

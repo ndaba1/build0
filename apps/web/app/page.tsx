@@ -39,7 +39,7 @@ export default function Home() {
     },
     {
       label: "Github",
-      node: (
+      node: () => (
         <Link
           href="https://github.com/ndaba1/build0"
           className="flex items-center gap-2 group text-foreground/50 transition-all hover:text-foreground font-medium"
@@ -60,11 +60,11 @@ export default function Home() {
           </div>
 
           <div className="justify-center items-center col-span-6">
-            <nav className="mx-auto p-2 px-4 border bg-background rounded-3xl w-fit h-fit">
+            <nav className="mx-auto p-2 shadow-sm px-6 border bg-background rounded-3xl w-fit h-fit">
               <ul className="flex gap-8 items-center">
-                {links.map((link) =>
+                {links.map((link, idx) =>
                   link.node ? (
-                    link.node
+                    <link.node key={idx} />
                   ) : (
                     <Link
                       key={link.href}
@@ -80,13 +80,13 @@ export default function Home() {
           </div>
 
           <section className="z-10 flex items-center gap-5 col-span-3 justify-end">
-            <Button className="rounded-lg" variant="ghost">
+            <Button className="rounded-3xl text-base" variant="ghost">
               Sign In
             </Button>
-            <Button className="rounded-lg">Get Started</Button>
+            <Button className="rounded-3xl">Get Started</Button>
           </section>
         </header>
-        <section className="mx-auto max-w-7xl py-10 lg:py-28 grid gap-10">
+        <section className="mx-auto max-w-7xl py-16 lg:py-40 grid gap-10">
           {/* <div className="absolute bottom-0 right-0 z-[1] h-72 w-full bg-gradient-to-t from-background to-transparent"></div> */}
           <SquaresPattern />
           {/* <div
@@ -102,16 +102,11 @@ export default function Home() {
             ></div>
           </div> */}
           <h2 className="text-7xl z-10 max-w-[60rem] text-center mx-auto font-cal">
-            Open source{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-500 to-indigo-500">
-              pdf
-            </span>{" "}
-            generation tooling for focused teams
+            Open source pdf generation for focused teams
           </h2>
-          <p className="text-xl z-10 text-muted-foreground leading-relaxed text-center max-w-3xl mx-auto">
-            Build0 is a modern and open source pdf generation tooling for
-            focused teams. It is designed to help you generate pdfs with ease
-            and speed.
+          <p className="text-2xl z-10 text-muted-foreground text-center max-w-2xl mx-auto">
+            <span>BuildZero</span> is a modern, open-source, and easy-to-use PDF generation
+            service for developers and teams.
           </p>
           <div className="flex z-10 w-full items-center max-w-md space-x-4 mx-auto">
             <Input

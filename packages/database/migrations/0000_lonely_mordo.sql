@@ -1,4 +1,10 @@
 DO $$ BEGIN
+ CREATE TYPE "public"."user_roles" AS ENUM('MEMBER', 'ADMIN');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  CREATE TYPE "public"."document_formats" AS ENUM('PDF', 'IMAGE');
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -30,6 +36,23 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"ended_at" timestamp,
 	"retries" integer DEFAULT 0 NOT NULL,
 	"error_message" text
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "project_users" (
+	"project_id" text,
+	"user_id" text,
+	"user_role" "user_roles" DEFAULT 'MEMBER',
+	"created_at" timestamp with time zone
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "projects" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"slug" text NOT NULL,
+	"usage" integer DEFAULT 0,
+	"usage_limit" integer DEFAULT 500,
+	"created_at" timestamp with time zone,
+	CONSTRAINT "projects_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "document_types" (
@@ -83,6 +106,17 @@ CREATE TABLE IF NOT EXISTS "tokens" (
 	"is_revoked" boolean DEFAULT false NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "users" (
+	"id" text PRIMARY KEY NOT NULL,
+	"avatar" text,
+	"name" text NOT NULL,
+	"sub" text NOT NULL,
+	"email" text NOT NULL,
+	"is_machine" boolean DEFAULT false,
+	"created_at" timestamp with time zone,
+	CONSTRAINT "users_email_unique" UNIQUE("email")
+);
+--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "documents" ADD CONSTRAINT "documents_job_id_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
@@ -97,6 +131,18 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "jobs" ADD CONSTRAINT "jobs_template_id_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "public"."templates"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "project_users" ADD CONSTRAINT "project_users_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "project_users" ADD CONSTRAINT "project_users_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
