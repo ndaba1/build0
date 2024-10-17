@@ -16,7 +16,7 @@
     "@pulumi/tls": "^5.0.8",
     "@types/lodash": "^4.17.10",
     "lodash": "^4.17.21",
-    "sst": "3.2.11"
+    "sst": "3.2.31"
   },
   "scripts": {
     "dev": "npm run web:dev",

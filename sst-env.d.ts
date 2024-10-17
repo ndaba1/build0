@@ -37,5 +37,9 @@ declare module "sst" {
       "type": "sst.aws.Nextjs"
       "url": string
     }
+    "PostgresMigrator": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
   }
 }

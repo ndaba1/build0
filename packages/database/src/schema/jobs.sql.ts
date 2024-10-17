@@ -36,23 +36,6 @@ export const jobs = pgTable(
   })
 );
 
-export const jobLogs = pgTable(
-  "job_logs",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => createId()),
-    jobId: text("job_id")
-      .notNull()
-      .references(() => jobs.id),
-    logFileS3Key: text("log_file_s3_key").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (t) => ({
-    jobIdIndex: index("job_log_job_id_idx").on(t.jobId),
-  })
-);
-
 export type Job = typeof jobs.$inferSelect;
 
 export const jobRelations = relations(jobs, ({ one }) => ({
