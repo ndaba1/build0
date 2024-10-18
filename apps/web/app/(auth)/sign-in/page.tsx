@@ -29,7 +29,7 @@ import { useMutation } from "@tanstack/react-query";
 import { signIn, signUp } from "aws-amplify/auth";
 import { useState } from "react";
 import { NewPasswordRequired } from "./new-password";
-import { redirect, useRouter } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 
 const schema = z.object({
   email: z.string().email(),
@@ -53,7 +53,9 @@ const schema = z.object({
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<"login" | "new-password">("login");
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [missingAttributes, setMissingAttributes] = useState<string[]>([]);
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -75,7 +77,10 @@ export default function LoginForm() {
         setStep("new-password");
         setMissingAttributes(nextStep.missingAttributes || []);
       } else if (isSignedIn) {
-        router.replace("/home");
+        setIsRedirecting(true);
+
+        const next = searchParams.get("next");
+        router.replace(next || "/home");
       }
     },
   });
@@ -146,7 +151,11 @@ export default function LoginForm() {
                 )}
               />
 
-              <Button loading={isPending} type="submit" className="w-full">
+              <Button
+                loading={isPending || isRedirecting}
+                type="submit"
+                className="w-full"
+              >
                 Login
               </Button>
             </form>

@@ -41,9 +41,9 @@ export const userPool = new sst.aws.CognitoUserPool(
         handler: "packages/cognito/src/custom-message/index.handler",
         nodejs: {
           esbuild: {
-            jsx: "transform", 
-          }
-        }
+            jsx: "transform",
+          },
+        },
       },
       postConfirmation: {
         vpc,
@@ -67,11 +67,23 @@ export const userPool = new sst.aws.CognitoUserPool(
             mutable: true,
             attributeDataType: "String",
           },
+          {
+            name: "is_onboarded",
+            required: false,
+            mutable: true,
+            attributeDataType: "Boolean",
+          },
+          {
+            name: "default_project",
+            required: false,
+            mutable: true,
+            attributeDataType: "String",
+          },
         ];
       },
     },
   }
-);
+); 
 
 export const userPoolClient = userPool.addClient("BuildZeroPoolWebClient");
 

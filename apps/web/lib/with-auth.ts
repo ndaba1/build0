@@ -1,11 +1,15 @@
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
 import { tokens } from "@repo/database/schema";
-import { fetchAuthSession } from "aws-amplify/auth/server";
+import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth/server";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import { ZodAny, z } from "zod";
 import { runWithAmplifyServerContext } from "./amplify";
+import { Amplify } from "aws-amplify";
+import { authConfig } from "./auth";
+
+Amplify.configure(authConfig, { ssr: true });
 
 export function withAuth<T = z.infer<ZodAny>>(
   handler: (args: { req: NextRequest; params: T }) => Promise<Response>
@@ -30,19 +34,19 @@ export function withAuth<T = z.infer<ZodAny>>(
     else {
       console.log("Using dashboard session");
       try {
-        const session = await runWithAmplifyServerContext({
+        const user = await runWithAmplifyServerContext({
           nextServerContext: { cookies },
-          operation: (contextSpec) => fetchAuthSession(contextSpec),
+          operation: (contextSpec) => getCurrentUser(contextSpec),
         });
 
-        console.log(session);
+        console.log(user);
 
-        if (!session.tokens) {
-          // return Response.json({ message: "Unauthorized" }, { status: 401 });
+        if (!user.userId) {
+          return Response.json({ message: "Unauthorized" }, { status: 401 });
         }
       } catch (e) {
         console.error("error occurred", e);
-        // return Response.json({ message: "Unauthorized" }, { status: 401 });
+        return Response.json({ message: "Unauthorized" }, { status: 401 });
       }
     }
 

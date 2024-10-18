@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { DashboardNavigation } from "./navigation";
+import { UserButton } from "./user-button";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -64,10 +65,7 @@ export default function DashboardLayout({
               <GithubIcon className="w-5 h-5 dark:fill-white" />
               <span>Star on Github</span>
             </Link>
-            <Avatar>
-              {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
+            <UserButton />
           </div>
         </div>
       </header>

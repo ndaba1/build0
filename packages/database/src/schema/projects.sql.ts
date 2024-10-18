@@ -1,33 +1,46 @@
 import { createId } from "@paralleldrive/cuid2";
 import { relations } from "drizzle-orm";
-import { integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { users } from "./users.sql";
 
 export const userRoles = pgEnum("user_roles", ["MEMBER", "ADMIN"]);
 
-export const projects = pgTable("projects", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
+export const projects = pgTable(
+  "projects",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
 
-  usage: integer("usage").default(0),
-  usageLimit: integer("usage_limit").default(500),
+    usage: integer("usage").default(0),
+    usageLimit: integer("usage_limit").default(500),
 
-  createdAt: timestamp("created_at", {
-    mode: "date",
-    withTimezone: true,
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    }).$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    slugIdx: index("slug_idx").on(t.slug),
   })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("created_at", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-});
+);
 
 export const createProjectSchema = createInsertSchema(projects).omit({
   id: true,
@@ -60,6 +73,17 @@ export const projectUsers = pgTable("project_users", {
     withTimezone: true,
   }).$onUpdate(() => new Date()),
 });
+
+export const projectUsersRelations = relations(projectUsers, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectUsers.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [projectUsers.userId],
+    references: [users.id],
+  }),
+}));
 
 export const projectRelations = relations(projects, ({ many }) => ({
   users: many(projectUsers),
