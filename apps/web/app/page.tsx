@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import Link from "next/link";
 import { SquaresPattern } from "./pattern";
+import { cn } from "@/lib/utils";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -80,9 +81,15 @@ export default function Home() {
           </div>
 
           <section className="z-10 flex items-center gap-5 col-span-3 justify-end">
-            <Button className="rounded-3xl text-base" variant="ghost">
+            <Link
+              href="/sign-in"
+              className={cn({
+                className: "rounded-3xl text-base",
+                variant: "ghost",
+              })}
+            >
               Sign In
-            </Button>
+            </Link>
             <Button className="rounded-3xl">Get Started</Button>
           </section>
         </header>
@@ -105,8 +112,8 @@ export default function Home() {
             Open source pdf generation for focused teams
           </h2>
           <p className="text-2xl z-10 text-muted-foreground text-center max-w-2xl mx-auto">
-            <span>BuildZero</span> is a modern, open-source, and easy-to-use PDF generation
-            service for developers and teams.
+            <span>BuildZero</span> is a modern, open-source, and easy-to-use PDF
+            generation service for developers and teams.
           </p>
           <div className="flex z-10 w-full items-center max-w-md space-x-4 mx-auto">
             <Input

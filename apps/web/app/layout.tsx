@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${calFont.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${calFont.variable} font-sans antialiased`}
       >
         <Providers>{children}</Providers>
         <TopLoader showSpinner={false} />

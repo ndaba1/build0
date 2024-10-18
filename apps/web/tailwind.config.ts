@@ -75,6 +75,28 @@ const config: Config = {
           },
         },
 
+        // Custom spinner animation (for loading-spinner)
+        spinner: {
+          "0%": {
+            opacity: "1",
+          },
+          "100%": {
+            opacity: "0",
+          },
+        },
+        // Custom blink animation (for loading-dots)
+        blink: {
+          "0%": {
+            opacity: "0.2",
+          },
+          "20%": {
+            opacity: "1",
+          },
+          "100%": {
+            opacity: "0.2",
+          },
+        },
+
         // tremor
         hide: {
           from: { opacity: "1" },
@@ -130,6 +152,11 @@ const config: Config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
 
+        // Custom spinner animation (for loading-spinner)
+        spinner: "spinner 1.2s linear infinite",
+        // Custom blink animation (for loading-dots)
+        blink: "blink 1.4s infinite both",
+
         // tremor
         hide: "hide 150ms cubic-bezier(0.16, 1, 0.3, 1)",
         slideDownAndFade:
@@ -154,6 +181,7 @@ const config: Config = {
       },
       fontFamily: {
         cal: ["var(--font-cal)", ...fontFamily.sans],
+        sans: ["var(--font-geist-sans)", ...fontFamily.sans],
       },
     },
   },
