@@ -1,17 +1,18 @@
 import {
+  AuthSession,
   FetchUserAttributesOutput,
+  fetchAuthSession,
   fetchUserAttributes,
-  getCurrentUser,
   signOut,
 } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Spinner } from "./ui/spinner";
-import Image from "next/image";
-import logo from "@/assets/logo.png";
+import { Loader } from "./loader";
 
 type AuthenticatorContextType = {
+  idToken?: string | null;
+  accessToken?: string | null;
   userAttributes: FetchUserAttributesOutput | null;
   loading: boolean;
   error: Error | null;
@@ -23,6 +24,8 @@ const AuthenticatorContext = createContext<AuthenticatorContextType>({
   loading: false,
   error: null,
   signOut: () => {},
+  accessToken: null,
+  idToken: null,
 });
 
 export const AuthenticatorProvider = ({
@@ -35,12 +38,18 @@ export const AuthenticatorProvider = ({
   const [loading, setLoading] = useState(true);
   const [userAttributes, setUserAttributes] =
     useState<FetchUserAttributesOutput | null>(null);
+  const [authSession, setAuthSession] = useState<AuthSession | null>(null);
 
   useEffect(() => {
     async function loadUser() {
       try {
-        const attributes = await fetchUserAttributes();
+        const [session, attributes] = await Promise.all([
+          fetchAuthSession(),
+          fetchUserAttributes(),
+        ]);
+
         setUserAttributes(attributes);
+        setAuthSession(session);
       } catch (error) {
         console.error(error);
       } finally {
@@ -65,25 +74,18 @@ export const AuthenticatorProvider = ({
   }
 
   if (loading) {
-    return (
-      <main className="w-full h-full min-h-screen flex flex-col gap-12 items-center justify-center">
-        <Image
-          src={logo}
-          alt="Logo"
-          className="-mt-16"
-          width={36}
-          height={36}
-        />
-        <div className="relative flex items-center justify-center">
-          <Spinner className="text-[28px] text-foreground" />
-        </div>
-      </main>
-    );
+    return <Loader />;
   }
+
+  const tokens = authSession?.tokens;
+  const idToken = tokens?.idToken?.toString();
+  const accessToken = tokens?.accessToken?.toString();
 
   return (
     <AuthenticatorContext.Provider
       value={{
+        idToken,
+        accessToken,
         loading,
         userAttributes,
         error: null,

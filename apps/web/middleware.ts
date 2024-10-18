@@ -1,6 +1,6 @@
+import { fetchUserAttributes } from "aws-amplify/auth/server";
 import { NextRequest, NextResponse } from "next/server";
 import { runWithAmplifyServerContext } from "./lib/amplify";
-import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth/server";
 
 export const config = {
   matcher: [
@@ -60,19 +60,23 @@ export default async function middleware(request: NextRequest) {
   // accessing protected routes
   else if (!PUBLIC_ROUTES.has(path)) {
     console.log(
-      `Accessing protected route ${path} with authenticated status: ${user}`
+      `Accessing protected route ${path} with user: ${JSON.stringify(
+        user,
+        null,
+        2
+      )}`
     );
     if (user) {
       return;
     }
 
     return NextResponse.redirect(new URL(`/sign-in?next=${path}`, request.url));
-  }
-  // redirect auth user to dashboard by default
-  else if (user && (!user.is_onboarded || !user.default_project)) {
+  } else if (user && user["custom:default_project"]) {
+    return NextResponse.redirect(
+      new URL(`/${user["custom:default_project"]}`, request.url)
+    );
+  } else if (user) {
     return NextResponse.redirect(new URL("/onboarding", request.url));
-  } else if (user && user.default_project) {
-    return NextResponse.redirect(new URL(`/${user.default_project}`, request.url));
   }
 }
 

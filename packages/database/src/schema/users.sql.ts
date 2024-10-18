@@ -21,7 +21,7 @@ export const users = pgTable(
     })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("created_at", {
+    updatedAt: timestamp("updated_at", {
       mode: "date",
       withTimezone: true,
     }).$onUpdate(() => new Date()),
@@ -35,3 +35,6 @@ export const users = pgTable(
 export const usersRelations = relations(users, ({ many }) => ({
   projects: many(projectUsers),
 }));
+
+
+export type User = typeof users.$inferSelect;

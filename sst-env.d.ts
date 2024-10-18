@@ -30,6 +30,13 @@ declare module "sst" {
       "secret": string
       "type": "sst.aws.CognitoUserPoolClient"
     }
+    "BuildZeroRedisCache": {
+      "host": string
+      "password": string
+      "port": number
+      "type": "sst.aws.Redis"
+      "username": string
+    }
     "BuildZeroVpc": {
       "bastion": string
       "type": "sst.aws.Vpc"

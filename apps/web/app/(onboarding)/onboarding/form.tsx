@@ -13,29 +13,31 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createProjectSchema } from "@repo/database/schema";
+import slugify from "@sindresorhus/slugify";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { updateUserAttributes } from "aws-amplify/auth";
+import axios from "axios";
 import {
   CheckIcon,
   DatabaseIcon,
-  FileText,
   FileTextIcon,
   GithubIcon,
   XIcon,
   ZapIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import slugify from "@sindresorhus/slugify";
-import { useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { handle } from "typed-handlers";
-import axios from "axios";
-import { Spinner } from "@/components/ui/spinner";
 import { useDebounce } from "use-debounce";
+import { z } from "zod";
 
 const schema = z.object({
-  name: z.string().min(6),
-  slug: z.string().min(6),
+  name: z.string().min(3),
+  slug: z.string().min(3),
 });
 
 const freePlanFeatures = [
@@ -54,7 +56,9 @@ const freePlanFeatures = [
 ];
 
 export default function OnboardingForm() {
-  const { userAttributes } = useAuth();
+  const router = useRouter();
+  const { userAttributes, idToken } = useAuth();
+  const [redirecting, setRedirecting] = useState(false);
   const defaultName = `${userAttributes?.email?.split("@")[0]}'s Project`;
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -78,16 +82,46 @@ export default function OnboardingForm() {
       const cfg = handle("/api/v1/projects/exists");
 
       const { data } = await axios.get<{ exists: boolean }>(
-        `${cfg.url}?slug=${debounced}`
+        `${cfg.url}?slug=${debounced}`,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        }
       );
 
       return data.exists;
     },
   });
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (values: z.infer<typeof schema>) => {
+      const cfg = handle("/api/v1/projects", {
+        bodySchema: createProjectSchema,
+      });
+
+      await axios.post(cfg.url, cfg.body(values), {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
+
+      await updateUserAttributes({
+        userAttributes: {
+          "custom:is_onboarded": "true",
+          "custom:default_project": values.slug,
+        },
+      }).catch(console.error);
+    },
+    onSuccess: () => {
+      setRedirecting(true);
+      router.replace(`/${form.getValues().slug}`);
+    },
+  });
+
   return (
     <Form {...form}>
-      <form>
+      <form onSubmit={form.handleSubmit((v) => mutate(v))}>
         <CardContent className="py-4 pb-6 space-y-6 border-b">
           <FormField
             control={form.control}
@@ -145,7 +179,7 @@ export default function OnboardingForm() {
             )}
           />
 
-          <section className="bg-muted rounded-lg p-2 px-4 space-y-2">
+          <section className="bg-muted/80 rounded-lg p-2 px-4 space-y-2">
             <h3 className="text-lg font-semibold">Free plan features</h3>
             <ul className="grid gap-2">
               {freePlanFeatures.map((feature) => (
@@ -159,7 +193,12 @@ export default function OnboardingForm() {
         </CardContent>
 
         <CardFooter className="py-6 flex flex-col space-y-4">
-          <Button type="submit" className="w-full">
+          <Button
+            disabled={isLoading || slugExists}
+            loading={isPending || redirecting}
+            type="submit"
+            className="w-full"
+          >
             Create Project
           </Button>
 

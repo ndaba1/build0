@@ -83,15 +83,19 @@ export const userPool = new sst.aws.CognitoUserPool(
       },
     },
   }
-); 
+);
 
 export const userPoolClient = userPool.addClient("BuildZeroPoolWebClient");
+
+export const redis = new sst.aws.Redis("BuildZeroRedisCache", {
+  vpc,
+});
 
 export const website = new sst.aws.Nextjs(
   "BuildZeroWeb",
   {
     vpc,
-    link: [database, docBucket, imageBucket],
+    link: [database, docBucket, imageBucket, redis],
     path: "apps/web",
     domain: {
       name: "build0.dev",
@@ -100,6 +104,7 @@ export const website = new sst.aws.Nextjs(
       redirects: ["www.build0.dev"],
     },
     environment: {
+      NEXT_PUBLIC_AWS_REGION: "us-east-2",
       NEXT_PUBLIC_USER_POOL_ID: userPool.id,
       NEXT_PUBLIC_USER_POOL_CLIENT_ID: userPoolClient.id,
     },

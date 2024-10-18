@@ -32,7 +32,7 @@ export const projects = pgTable(
     })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("created_at", {
+    updatedAt: timestamp("updated_at", {
       mode: "date",
       withTimezone: true,
     }).$onUpdate(() => new Date()),
@@ -57,22 +57,28 @@ export const getProjectSchema = createSelectSchema(projects, {
 
 export const listProjectSchema = getProjectSchema.array();
 
-export const projectUsers = pgTable("project_users", {
-  projectId: text("project_id").references(() => projects.id),
-  userId: text("user_id").references(() => users.id),
-  role: userRoles("user_role").default("MEMBER"),
+export const projectUsers = pgTable(
+  "project_users",
+  {
+    projectId: text("project_id").references(() => projects.id),
+    userId: text("user_id").references(() => users.id),
+    role: userRoles("user_role").default("MEMBER"),
 
-  createdAt: timestamp("created_at", {
-    mode: "date",
-    withTimezone: true,
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "date",
+      withTimezone: true,
+    }).$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    projectUserIdx: index("project_user_idx").on(t.projectId, t.userId),
   })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("created_at", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-});
+);
 
 export const projectUsersRelations = relations(projectUsers, ({ one }) => ({
   project: one(projects, {

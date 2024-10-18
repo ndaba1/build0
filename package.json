@@ -5,6 +5,10 @@
   "description": "Open-source pdf generation tooling for focused teams",
   "author": "Victor Ndaba <mwangindaba@gmail.com>",
   "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
     "@types/aws-lambda": "8.10.145",
     "@types/node": "^20",

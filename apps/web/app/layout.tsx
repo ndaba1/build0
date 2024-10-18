@@ -1,4 +1,3 @@
-import "@aws-amplify/ui-react/styles.css";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import TopLoader from "nextjs-toploader";
