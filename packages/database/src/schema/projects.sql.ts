@@ -60,6 +60,9 @@ export const listProjectSchema = getProjectSchema.array();
 export const projectUsers = pgTable(
   "project_users",
   {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
     projectId: text("project_id").references(() => projects.id),
     userId: text("user_id").references(() => users.id),
     role: userRoles("user_role").default("MEMBER"),

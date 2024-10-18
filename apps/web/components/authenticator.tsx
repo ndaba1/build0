@@ -6,9 +6,8 @@ import {
   signOut,
 } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Loader } from "./loader";
 
 type AuthenticatorContextType = {
   idToken?: string | null;
@@ -19,21 +18,15 @@ type AuthenticatorContextType = {
   signOut: () => void;
 };
 
-const AuthenticatorContext = createContext<AuthenticatorContextType>({
-  userAttributes: null,
-  loading: false,
-  error: null,
-  signOut: () => {},
-  accessToken: null,
-  idToken: null,
-});
+const AuthenticatorContext = createContext<AuthenticatorContextType | null>(
+  null
+);
 
 export const AuthenticatorProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [userAttributes, setUserAttributes] =
@@ -71,10 +64,6 @@ export const AuthenticatorProvider = ({
     signOut().then(() => {
       window.location.href = `/sign-in?next=${pathname}`;
     });
-  }
-
-  if (loading) {
-    return <Loader />;
   }
 
   const tokens = authSession?.tokens;

@@ -81,7 +81,6 @@ export default async function middleware(request: NextRequest) {
 }
 
 async function getUser(request: NextRequest, response: NextResponse) {
-  console.time("getUser");
   const user = await runWithAmplifyServerContext({
     nextServerContext: { request, response },
     operation: async (contextSpec) => {
@@ -94,7 +93,6 @@ async function getUser(request: NextRequest, response: NextResponse) {
       }
     },
   });
-  console.timeEnd("getUser");
 
   return user;
 }

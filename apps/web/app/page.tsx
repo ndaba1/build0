@@ -1,10 +1,10 @@
 import logo from "@/assets/logo.png";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { SquaresPattern } from "./pattern";
-import { cn } from "@/lib/utils";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -83,14 +83,22 @@ export default function Home() {
           <section className="z-10 flex items-center gap-5 col-span-3 justify-end">
             <Link
               href="/sign-in"
-              className={cn({
+              className={cn(buttonVariants({
                 className: "rounded-3xl text-base",
                 variant: "ghost",
-              })}
+              }))}
             >
               Sign In
             </Link>
-            <Button className="rounded-3xl">Get Started</Button>
+            <Link
+              href="/sign-up"
+              className={cn(buttonVariants({
+                variant: "default",
+                className: "rounded-3xl",
+              }))}
+            >
+              Get Started
+            </Link>
           </section>
         </header>
         <section className="mx-auto max-w-7xl py-16 lg:py-40 grid gap-10">

@@ -14,6 +14,7 @@ export const database = new sst.aws.Postgres("BuildZeroDatabase", {
 const migrator = new sst.aws.Function("PostgresMigrator", {
   vpc,
   link: [database],
+  timeout: "2 minutes",
   handler: "packages/database/src/migrator.handler",
   copyFiles: [
     {
@@ -35,18 +36,10 @@ export const userPool = new sst.aws.CognitoUserPool(
   {
     usernames: ["email"],
     triggers: {
-      customMessage: {
-        vpc,
-        name: `BuildZeroCognitoCustomMessageFn-${$app.stage}`,
-        handler: "packages/cognito/src/custom-message/index.handler",
-        nodejs: {
-          esbuild: {
-            jsx: "transform",
-          },
-        },
-      },
+      customMessage: "packages/cognito/src/custom-message/index.handler",
       postConfirmation: {
         vpc,
+        memory: "3008 MB",
         name: `BuildZeroCognitoPostConfirmationFn-${$app.stage}`,
         handler: "packages/cognito/src/post-confirmation/index.handler",
         link: [database],
@@ -107,6 +100,9 @@ export const website = new sst.aws.Nextjs(
       NEXT_PUBLIC_AWS_REGION: "us-east-2",
       NEXT_PUBLIC_USER_POOL_ID: userPool.id,
       NEXT_PUBLIC_USER_POOL_CLIENT_ID: userPoolClient.id,
+
+      // uncomment for self signup
+      // ENABLE_SELF_SIGNUP: "true",
     },
   },
   // make sure migrations applied
