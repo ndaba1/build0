@@ -1,15 +1,17 @@
 "use client";
 
+import { useProject } from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function DashboardNavigation() {
   const pathname = usePathname();
+  const { slug } = useProject();
   const links = [
     {
       name: "Dashboard",
-      href: "/home",
+      href: "/",
     },
     {
       name: "Jobs",
@@ -30,16 +32,21 @@ export function DashboardNavigation() {
   ];
 
   function isActive(href: string) {
-    if (href === "/home") {
-      return pathname === "/home";
+    if (href === slug) {
+      return pathname === slug;
     }
 
     return pathname.startsWith(href);
   }
 
+  const normalizedLinks = links.map((link) => ({
+    ...link,
+    href: `${slug}${link.href}`,
+  }));
+
   return (
     <nav className="flex items-center gap-8 text-muted-foreground/80">
-      {links.map((link) => (
+      {normalizedLinks.map((link) => (
         <Link
           href={link.href}
           key={link.href}

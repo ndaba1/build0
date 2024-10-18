@@ -1,27 +1,12 @@
+import logo from "@/assets/logo.png";
 import { FadeIn } from "@/components/fade-in";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 import Image from "next/image";
-import React from "react";
-import logo from "@/assets/logo.png";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/components/authenticator";
 import OnboardingForm from "./form";
 
 export default function Onboarding() {

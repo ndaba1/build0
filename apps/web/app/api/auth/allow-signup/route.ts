@@ -4,6 +4,8 @@ import { db } from "@repo/database/client";
 import { users } from "@repo/database/schema";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export const GET = async () => {
   // TODO: add redis config?
 
