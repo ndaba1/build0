@@ -57,6 +57,12 @@ export const getProjectSchema = createSelectSchema(projects, {
 
 export const listProjectSchema = getProjectSchema.array();
 
+export const projectUserStatus = pgEnum("project_user_status", [
+  "PENDING",
+  "ACTIVE",
+  "DISABLED",
+]);
+
 export const projectUsers = pgTable(
   "project_users",
   {
@@ -65,7 +71,8 @@ export const projectUsers = pgTable(
       .$defaultFn(() => createId()),
     projectId: text("project_id").references(() => projects.id),
     userId: text("user_id").references(() => users.id),
-    role: userRoles("user_role").default("MEMBER"),
+    role: userRoles("user_role").notNull().default("MEMBER"),
+    status: projectUserStatus("status").notNull().default("ACTIVE"),
 
     createdAt: timestamp("created_at", {
       mode: "date",
@@ -79,6 +86,7 @@ export const projectUsers = pgTable(
     }).$onUpdate(() => new Date()),
   },
   (t) => ({
+    statusIdx: index("project_user_status_idx").on(t.status),
     projectUserIdx: index("project_user_idx").on(t.projectId, t.userId),
   })
 );

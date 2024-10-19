@@ -1,11 +1,12 @@
 import { render } from "@react-email/render";
-import React from "react";
 
-import VerifyEmail from "@repo/email/verify";
 import InviteUser from "@repo/email/invite";
+import VerifyEmail from "@repo/email/verify";
 import { CustomMessageTriggerEvent } from "aws-lambda";
 
 export const handler = async (event: CustomMessageTriggerEvent) => {
+  console.log("function invoked with event", JSON.stringify(event, null, 2));
+
   if (event.triggerSource === "CustomMessage_SignUp") {
     event.response.emailSubject = "Verify your BuildZero Account";
     event.response.emailMessage = await render(

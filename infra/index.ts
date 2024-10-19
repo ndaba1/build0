@@ -31,52 +31,54 @@ const invocation = new aws.lambda.Invocation("PostgresMigratorInvocation", {
   }),
 });
 
-export const userPool = new sst.aws.CognitoUserPool(
-  "BuildZeroCognitoUserPool",
-  {
-    usernames: ["email"],
-    triggers: {
-      customMessage: "packages/cognito/src/custom-message/index.handler",
-      postConfirmation: {
-        vpc,
-        memory: "3008 MB",
-        name: `BuildZeroCognitoPostConfirmationFn-${$app.stage}`,
-        handler: "packages/cognito/src/post-confirmation/index.handler",
-        link: [database],
-      },
+export const userPool = new sst.aws.CognitoUserPool("BuildZeroAuth", {
+  usernames: ["email"],
+  triggers: {
+    customMessage: "packages/cognito/src/custom-message/index.handler",
+    postAuthentication: {
+      vpc,
+      memory: "3008 MB",
+      handler: "packages/cognito/src/post-authentication/index.handler",
+      link: [database],
     },
-    transform: {
-      userPool(args) {
-        args.schemas = [
-          {
-            name: "email",
-            required: true,
-            mutable: true,
-            attributeDataType: "String",
-          },
-          {
-            name: "name",
-            required: true,
-            mutable: true,
-            attributeDataType: "String",
-          },
-          {
-            name: "is_onboarded",
-            required: false,
-            mutable: true,
-            attributeDataType: "Boolean",
-          },
-          {
-            name: "default_project",
-            required: false,
-            mutable: true,
-            attributeDataType: "String",
-          },
-        ];
-      },
+    postConfirmation: {
+      vpc,
+      memory: "3008 MB",
+      handler: "packages/cognito/src/post-confirmation/index.handler",
+      link: [database],
     },
-  }
-);
+  },
+  transform: {
+    userPool(args) {
+      args.schemas = [
+        {
+          name: "email",
+          required: true,
+          mutable: true,
+          attributeDataType: "String",
+        },
+        {
+          name: "name",
+          required: true,
+          mutable: true,
+          attributeDataType: "String",
+        },
+        {
+          name: "is_onboarded",
+          required: false,
+          mutable: true,
+          attributeDataType: "Boolean",
+        },
+        {
+          name: "default_project",
+          required: false,
+          mutable: true,
+          attributeDataType: "String",
+        },
+      ];
+    },
+  },
+});
 
 export const userPoolClient = userPool.addClient("BuildZeroPoolWebClient");
 
@@ -88,7 +90,7 @@ export const website = new sst.aws.Nextjs(
   "BuildZeroWeb",
   {
     vpc,
-    link: [database, docBucket, imageBucket, redis],
+    link: [database, docBucket, imageBucket, redis, userPool, userPoolClient],
     path: "apps/web",
     domain: {
       name: "build0.dev",

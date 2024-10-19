@@ -45,7 +45,7 @@ export default function DashboardLayout({
 }) {
   return (
     <ProjectsAuth>
-      <main className="w-screen h-full bg-muted/30">
+      <main className="w-screen min-h-screen h-full bg-muted/30">
         <header className="w-full z-20 h-16 border-b bg-background sticky top-0">
           <div className="mx-auto max-w-7xl p-4 h-full flex items-center">
             <div className="inline-flex items-center justify-center rounded-md bg-white px-2">

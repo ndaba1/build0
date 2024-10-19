@@ -19,7 +19,8 @@ export function useProject() {
           id: string;
           name: string;
           slug: string;
-          isMember: string;
+          memberId: string;
+          isAdmin: boolean;
         };
       }>(cfg.url, {
         headers: {
@@ -33,7 +34,9 @@ export function useProject() {
 
       return data.project;
     },
+    refetchOnWindowFocus: false,
+    refetchInterval: 1000 * 60 * 5, // 5 minutes
   });
 
-  return { error, isLoading, slug, project: data };
+  return { error, isLoading, slug, ...data };
 }

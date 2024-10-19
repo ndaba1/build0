@@ -15,7 +15,8 @@ export const GET = withAuth<Params<"/api/v1/projects/[slug]">>(
         id: projects.id,
         name: projects.name,
         slug: projects.slug,
-        isMember: projectUsers.userId,
+        memberId: projectUsers.userId,
+        role: projectUsers.role,
       })
       .from(projects)
       .leftJoin(projectUsers, eq(projectUsers.projectId, projects.id))
@@ -28,12 +29,17 @@ export const GET = withAuth<Params<"/api/v1/projects/[slug]">>(
       return throwError("Project not found", 404);
     }
 
-    const isMember = project.isMember === user.id;
+    const isMember = project.memberId === user.id;
 
     if (!isMember) {
       return throwError("Project not found", 404);
     }
 
-    return NextResponse.json({ project });
+    return NextResponse.json({
+      project: {
+        ...project,
+        isAdmin: project.role === "ADMIN",
+      },
+    });
   }
 );

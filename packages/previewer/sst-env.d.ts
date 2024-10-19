@@ -5,13 +5,13 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
+    "BuildZeroAuth": {
+      "id": string
+      "type": "sst.aws.CognitoUserPool"
+    }
     "BuildZeroBucket": {
       "name": string
       "type": "sst.aws.Bucket"
-    }
-    "BuildZeroCognitoUserPool": {
-      "id": string
-      "type": "sst.aws.CognitoUserPool"
     }
     "BuildZeroDatabase": {
       "database": string

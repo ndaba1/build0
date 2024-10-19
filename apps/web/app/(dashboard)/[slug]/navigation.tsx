@@ -32,8 +32,8 @@ export function DashboardNavigation() {
   ];
 
   function isActive(href: string) {
-    if (href === slug) {
-      return pathname === slug;
+    if (href === `/${slug}`) {
+      return pathname === `/${slug}`;
     }
 
     return pathname.startsWith(href);
@@ -41,7 +41,7 @@ export function DashboardNavigation() {
 
   const normalizedLinks = links.map((link) => ({
     ...link,
-    href: `${slug}${link.href}`,
+    href: `/${slug}${link.href.replace(/\/$/, "")}`,
   }));
 
   return (
