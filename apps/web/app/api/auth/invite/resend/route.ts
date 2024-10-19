@@ -1,9 +1,12 @@
 import { withAuth } from "@/lib/auth/with-auth";
 import { throwError } from "@/lib/throw-error";
 import {
-    AdminCreateUserCommand,
-    CognitoIdentityProviderClient,
+  AdminCreateUserCommand,
+  CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
+import { eq } from "@repo/database";
+import { db } from "@repo/database/client";
+import { users } from "@repo/database/schema";
 import { NextResponse } from "next/server";
 import { Resource } from "sst";
 import { ZodAny, z } from "zod";
@@ -20,14 +23,19 @@ export const POST = withAuth(async ({ req, user }) => {
 
     const client = new CognitoIdentityProviderClient({});
 
+    const [invitedBy] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, user.id));
+
     const cmd = new AdminCreateUserCommand({
       Username: data.email,
       UserPoolId: Resource.BuildZeroAuth.id,
       MessageAction: "RESEND",
       DesiredDeliveryMediums: ["EMAIL"],
       ClientMetadata: {
-        invitedByName: user.name,
-        invitedByEmail: user.email,
+        invitedByName: invitedBy.name,
+        invitedByEmail: invitedBy.email,
       },
     });
 

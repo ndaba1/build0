@@ -4,12 +4,13 @@ import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Resource } from "sst";
 import { Params } from "typed-handlers";
 
-export const GET = withAuth<Params<"/api/v1/files/doc/[s3Key]">>(
+export const GET = withAuth<Params<"/api/v1/files/preview/[...s3Key]">>(
   async ({ req, params }) => {
     const s3 = new S3Client({});
+    const docKey = params.s3Key.join("/");
     const command = new GetObjectCommand({
-      Bucket: Resource.BuildZeroBucket.name,
-      Key: params.s3Key,
+      Bucket: Resource.BuildZeroImageBucket.name,
+      Key: docKey,
     });
 
     const { Body, ContentType, ContentLength } = await s3.send(command);
