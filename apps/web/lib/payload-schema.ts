@@ -1,4 +1,4 @@
-import { ZodType, z } from "zod";
+import { ZodAny, ZodType, z } from "zod";
 
 const baseTypeSchema = z.object({
   required: z.boolean(),
@@ -28,6 +28,10 @@ export const payloadSchema: z.ZodType<BasePayload> = baseTypeSchema.extend({
 
 export type PayloadSchema = z.infer<typeof payloadSchema>;
 
+/**
+ * Take in a json payload and recursively generate a schema for it.
+ * The schema is used to generate typescript interfaces (for the editor) and zod schemas (for API validation).
+ */
 export function generatePayloadSchema(
   payload: string,
   prev: z.infer<typeof payloadSchema>
@@ -153,4 +157,45 @@ export function payloadSchemaToZod(
   });
 
   return z.object(zodShape);
+}
+
+/**
+ * Take in a payload schema and generate a "dummy" json payload. This
+ * is used by the editor to preview the pdf since values may be required.
+ * Uses the criteria:
+ * - if field has default value, use that, othwerwise:
+ * - if field is string, value should "{{field}}"
+ * - if field is boolean, default value should be false
+ * - if field is number, default value should be 10
+ * - if field is array, recurse it's schema and generate at least 1 item
+ */
+export function payloadSchemaToJson(schema: PayloadSchema) {
+  const payload: Record<string, z.infer<ZodAny>> = {};
+
+  Object.entries(schema).forEach(([key, { type, required, defaultValue }]) => {
+    if (defaultValue !== null) {
+      payload[key] = defaultValue;
+    } else {
+      if (type.name === "string") {
+        payload[key] = `{{${key}}}`;
+      } else if (type.name === "boolean") {
+        payload[key] = false;
+      } else if (type.name === "number") {
+        payload[key] = 10;
+      } else if (type.name === "array") {
+        const isObjectSchema = (Object.keys(type.schema).length || 0) > 0;
+        payload[key] = isObjectSchema
+          ? payloadSchemaToJson(type.schema as PayloadSchema)
+          : type.schema === "boolean"
+          ? [false]
+          : type.schema === "number"
+          ? [10]
+          : ["{{item}}"];
+      } else if (type.name === "object") {
+        payload[key] = payloadSchemaToJson(type.schema as PayloadSchema);
+      }
+    }
+  });
+
+  return payload;
 }

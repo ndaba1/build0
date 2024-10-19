@@ -1,12 +1,12 @@
 import { TSEditor, useTsEditor } from "@/components/editor";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { BasePayload, generatePayloadSchema } from "@/lib/payload-schema";
@@ -118,6 +118,7 @@ function generate(variables: Variables) {
     props.form.setValue("functionDefinition", jsCode || "");
     props.form.setValue("rawFunctionDefinition", tsCode);
     props.form.setValue("payloadSchema", payloadSchema || {});
+    props.form.setValue("previewPayload", { hello: "world" });
   }, [definition, props.form, jsCode, tsCode]);
 
   return (

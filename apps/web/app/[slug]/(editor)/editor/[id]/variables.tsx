@@ -1,6 +1,5 @@
 "use client";
 
-import Editor from "@monaco-editor/react";
 import Monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -14,12 +13,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+import { useAuth } from "@/components/authenticator";
+import { JsonEditor } from "@/components/editor";
 import { Button } from "@/components/ui/button";
 import {
   BasePayload,
   generatePayloadSchema,
   payloadSchema,
   payloadSchemaToInterface,
+  payloadSchemaToJson,
 } from "@/lib/payload-schema";
 import { Template, patchTemplateSchema } from "@repo/database/schema";
 import { useMutation } from "@tanstack/react-query";
@@ -27,20 +29,32 @@ import axios from "axios";
 import { SquareTerminalIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { handle } from "typed-handlers";
+import { useDebounce } from "use-debounce";
+import { documentTypeDefs } from "./definitions";
 
 export function VariablesEditor({
   monaco,
   template,
+  onPayloadChange,
 }: {
   monaco?: typeof Monaco | null;
   template: Template;
+  onPayloadChange?: (payload: JSON) => void;
 }) {
   const router = useRouter();
+  const { idToken } = useAuth();
   const [show, setShow] = useState(false);
   const [schema, setSchema] = useState<z.infer<typeof payloadSchema>>(
     (template.payloadSchema || {}) as BasePayload
   );
-  const [samplePayload, setSamplePayload] = useState<string>("{}");
+
+  const fallbackPayload = payloadSchemaToJson(
+    (template.payloadSchema || {}) as BasePayload
+  );
+  const initialPayload = template.previewPayload || fallbackPayload;
+  const [samplePayload, setSamplePayload] = useState<string>(
+    JSON.stringify(initialPayload, null, 2)
+  );
 
   useEffect(() => {
     try {
@@ -61,23 +75,41 @@ export function VariablesEditor({
   useEffect(() => {
     if (!monaco) return;
 
+    // reset extra libs
+    monaco.languages.typescript.typescriptDefaults.setExtraLibs([]);
+
     const typeDef = payloadSchemaToInterface(schema);
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(typeDef);
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(`
+    ${documentTypeDefs}
+    ${typeDef}
+    `);
     monaco.languages.typescript.getTypeScriptWorker(); // -> trigger worker initialization
   }, [monaco, schema]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (payloadSchema: BasePayload) => {
+    mutationFn: async (values: {
+      payloadSchema: BasePayload;
+      previewPayload: string;
+    }) => {
       const cfg = handle("/api/v1/templates/[id]", {
         params: { id: template.id },
         bodySchema: patchTemplateSchema,
       });
 
-      await axios.patch(cfg.url, cfg.body({ payloadSchema }));
+      await axios.patch(cfg.url, cfg.body({ ...values }), {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
       router.refresh();
       setShow(false);
     },
   });
+
+  const [debouncedPayload] = useDebounce(samplePayload, 600);
+  useEffect(() => {
+    onPayloadChange?.(JSON.parse(debouncedPayload));
+  }, [debouncedPayload]);
 
   return (
     <Sheet open={show} onOpenChange={setShow}>
@@ -93,30 +125,14 @@ export function VariablesEditor({
           <div className="space-y-0.5">
             <h1 className="font-medium">Sample Payload</h1>
             <p className="text-muted-foreground text-sm">
-              Paste a sample payload here to update/generate a schema for your
-              template&apos;s variables
+              This payload is used to preview your pdf as well as updating the
+              template schema
             </p>
           </div>
-          <Editor
-            language="json"
-            width="100%"
-            className="border shadow"
-            height={300}
+          <JsonEditor
+            height={200}
             options={{
-              codeLens: false,
               readOnly: isPending,
-              fontFamily: "Menlo, Consolas, monospace, sans-serif",
-              quickSuggestions: false,
-              renderValidationDecorations: "off",
-              minimap: { enabled: false },
-              fontSize: 14,
-              folding: false,
-              wordWrap: "on",
-              tabSize: 2,
-              glyphMargin: false,
-              lineDecorationsWidth: 4,
-              lineNumbersMinChars: 2,
-              lineNumbers: "on",
             }}
             value={samplePayload}
             onChange={(v) => setSamplePayload(v || "")}
@@ -125,30 +141,13 @@ export function VariablesEditor({
           <div className="space-y-0.5">
             <h1 className="font-medium">Schema</h1>
             <p className="text-muted-foreground text-sm">
-              You can update the schema to set default values or mark fields as
+              Update this to set default values or mark fields as
               required/optional
             </p>
           </div>
-          <Editor
-            language="json"
-            width="100%"
-            className="border shadow"
-            height={300}
+          <JsonEditor
             options={{
-              codeLens: false,
               readOnly: isPending,
-              fontFamily: "Menlo, Consolas, monospace, sans-serif",
-              quickSuggestions: false,
-              renderValidationDecorations: "off",
-              minimap: { enabled: false },
-              fontSize: 14,
-              folding: false,
-              wordWrap: "on",
-              tabSize: 2,
-              glyphMargin: false,
-              lineDecorationsWidth: 4,
-              lineNumbersMinChars: 2,
-              lineNumbers: "on",
             }}
             value={JSON.stringify(schema, null, 2)}
             onChange={(v) => {
@@ -161,10 +160,15 @@ export function VariablesEditor({
           />
         </div>
 
-        <SheetFooter>
+        <SheetFooter className="mt-8">
           <Button
-            disabled={isPending}
-            onClick={() => mutate(schema)}
+            loading={isPending}
+            onClick={() =>
+              mutate({
+                payloadSchema: schema,
+                previewPayload: samplePayload,
+              })
+            }
             className="w-full"
             variant="default"
           >

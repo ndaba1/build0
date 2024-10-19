@@ -1,7 +1,10 @@
 "use client";
 
+import { useAuth } from "@/components/authenticator";
 import { SmallBadge } from "@/components/badge";
+import { Loader } from "@/components/loader";
 import { Card } from "@/components/ui/card";
+import { useProject } from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { listTemplateSchema } from "@repo/database/schema";
 import { useQuery } from "@tanstack/react-query";
@@ -12,22 +15,34 @@ import Link from "next/link";
 import { handle } from "typed-handlers";
 import { z } from "zod";
 
-export default function Templates() {
-  const { data, isLoading, refetch } = useQuery({
+export function TemplatesList() {
+  const { idToken } = useAuth();
+  const { slug } = useProject();
+  const { data, isLoading } = useQuery({
     queryKey: ["templates"],
     queryFn: async () => {
       const cfg = handle("/api/v1/templates");
 
       const { data } = await axios.get<{
         templates: z.infer<typeof listTemplateSchema>;
-      }>(cfg.url);
+      }>(cfg.url, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
 
       return data.templates;
     },
+    refetchOnWindowFocus: false,
+    refetchInterval: 1000 * 60 * 2,
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="relative w-full h-96">
+        <Loader fullScreen={false} showLogo={false} />;
+      </div>
+    );
   }
 
   return (
@@ -62,7 +77,7 @@ export default function Templates() {
             };
 
             return (
-              <Link key={template.id} href={`/editor/${template.id}`}>
+              <Link key={template.id} href={`editor/${template.id}`}>
                 <Card className="p-6 rounded-2xl cursor-pointer hover:-translate-y-1 hover:shadow-md hover:bg-opacity-10 transition-all">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-muted border flex items-center justify-center">

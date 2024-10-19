@@ -1,18 +1,19 @@
+import { useAuth } from "@/components/authenticator";
 import {
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { listDocumentTypeSchema } from "@repo/database/schema";
@@ -20,20 +21,26 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { handle } from "typed-handlers";
 import { z } from "zod";
 import { FormSection } from "./section";
 import { CreateTemplateForm } from "./utils";
 
 export function General({ form }: { form: CreateTemplateForm }) {
+  const { idToken } = useAuth();
   const { data: documentTypes, isLoading } = useQuery({
     queryKey: ["documentTypes-templates"],
     queryFn: async () => {
       const cfg = handle("/api/v1/document-types");
 
       const { data } = await axios.get<z.infer<typeof listDocumentTypeSchema>>(
-        cfg.url
+        cfg.url,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        }
       );
 
       return data;
@@ -41,6 +48,7 @@ export function General({ form }: { form: CreateTemplateForm }) {
   });
 
   const watch = form.watch();
+  const formRef = useRef(form);
 
   useEffect(() => {
     if (watch.documentTypeId && documentTypes) {
@@ -49,7 +57,7 @@ export function General({ form }: { form: CreateTemplateForm }) {
       );
 
       if (documentType) {
-        form.setValue("s3PathPrefix", documentType.s3PathPrefix);
+        formRef.current.setValue("s3PathPrefix", documentType.s3PathPrefix);
       }
     }
   }, [watch.documentTypeId, documentTypes]);
@@ -68,7 +76,9 @@ export function General({ form }: { form: CreateTemplateForm }) {
             <FormControl>
               <Input {...field} />
             </FormControl>
-            <FormDescription>This must be a unique value</FormDescription>
+            <FormDescription>
+              Must be unique, without special characters
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -105,7 +115,7 @@ export function General({ form }: { form: CreateTemplateForm }) {
             <FormDescription>
               You can manage document types in your{" "}
               <span className="inline-flex gap-1 items-center text-blue-500">
-                <Link href="/settings/document-types" className="underline">
+                <Link target="_blank" href="../settings/documents" className="underline">
                   settings
                 </Link>
 

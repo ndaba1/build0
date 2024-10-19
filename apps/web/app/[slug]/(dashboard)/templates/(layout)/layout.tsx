@@ -7,16 +7,19 @@ import React from "react";
 
 export default function TemplateLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { slug: string };
 }) {
+  console.log(params);
   return (
     <DashboardPage
       title="Templates"
       description=" Create re-usable templates with theming, custom variables and more."
       header={
         <Link
-          href="/templates/new"
+          href={`/${params.slug}/templates/new`}
           className={cn(buttonVariants({ variant: "default" }))}
         >
           <PlusIcon className="w-4 h-4 mr-2" />

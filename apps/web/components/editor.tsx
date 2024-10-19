@@ -1,12 +1,13 @@
 "use client";
 
-import { documentTypeDefs } from "@/app/(editor)/editor/[id]/definitions";
+import { documentTypeDefs } from "@/app/[slug]/(editor)/editor/[id]/definitions";
 import { cn } from "@/lib/utils";
 import { Editor } from "@monaco-editor/react";
 import Monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
 import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
+import { ZodAny, z } from "zod";
 
 export const defaultInitialCode = `\
 /**
@@ -23,9 +24,11 @@ function generate(variables: Variables) {
 export function useTsEditor({
   initialCode = defaultInitialCode,
   generatePdf,
+  previewPayload,
 }: {
   initialCode?: string;
   generatePdf?: (docDefinition: TDocumentDefinitions) => void;
+  previewPayload?: z.infer<ZodAny>;
 } = {}) {
   const generatePdfRef = useRef(generatePdf);
   const [tsCode, setTsCode] = useState(initialCode);
@@ -53,34 +56,30 @@ export function useTsEditor({
     );
   }
 
-  useEffect(() => {
-    if (!monaco || !editor) return;
+  async function compileAndPreview(payload: z.infer<ZodAny> = {}) {
+    const model = editor?.getModel();
+    if (!monaco || !editor || !model) return;
 
-    async function compile() {
-      const model = editor?.getModel();
-      if (!monaco || !editor || !model) return;
+    const worker = await monaco.languages.typescript.getTypeScriptWorker();
+    const proxy = await worker(model.uri);
+    const output = await proxy.getEmitOutput(model.uri.toString());
+    const outputCode = output.outputFiles[0].text;
 
-      const worker = await monaco.languages.typescript.getTypeScriptWorker();
-      const proxy = await worker(model.uri);
-      const output = await proxy.getEmitOutput(model.uri.toString());
-      const outputCode = output.outputFiles[0].text;
+    setJsCode(outputCode);
 
-      console.log(outputCode);
+    if (generatePdfRef.current) {
+      // TODO: move away from eval for security reasons
+      const generateFunc = eval(outputCode + "; generate");
 
-      setJsCode(outputCode);
-
-      if (generatePdfRef.current) {
-        // TODO: move away from eval for security reasons
-        const generateFunc = eval(outputCode + "; generate");
-
-        if (typeof generateFunc === "function") {
-          const docDefinition = generateFunc({});
-          generatePdfRef.current(docDefinition);
-        }
+      if (typeof generateFunc === "function") {
+        const docDefinition = generateFunc(payload);
+        generatePdfRef.current(docDefinition);
       }
     }
+  }
 
-    compile();
+  useEffect(() => {
+    compileAndPreview(previewPayload);
   }, [debouncedCode, monaco, editor]);
 
   return {
@@ -91,6 +90,7 @@ export function useTsEditor({
     onMount,
     monaco,
     editor,
+    compileAndPreview,
   };
 }
 

@@ -4,7 +4,7 @@ import { useAuth } from "@/components/authenticator";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { UserButton } from "../(dashboard)/[slug]/user-button";
+import { UserButton } from "../[slug]/(dashboard)/user-button";
 
 export function HeaderCTA() {
   const { loading, userAttributes } = useAuth();

@@ -2,9 +2,9 @@ import { withAuth } from "@/lib/auth/with-auth";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
 import {
-    createTemplateSchema,
-    documentTypes,
-    templates,
+  createTemplateSchema,
+  documentTypes,
+  templates,
 } from "@repo/database/schema";
 import { NextResponse } from "next/server";
 import { ZodAny, z } from "zod";
@@ -16,7 +16,7 @@ export const POST = withAuth(async ({ req }) => {
 
     const res = await db.insert(templates).values(data).returning();
 
-    return NextResponse.json({ item: res[0] });
+    return NextResponse.json({ template: res[0] });
   } catch (e) {
     console.error(e);
     return NextResponse.json(

@@ -1,6 +1,6 @@
-import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { Spinner } from "./spinner";
@@ -52,7 +52,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       props.children = (
         <>
           <div className="relative flex items-center justify-center">
-            <Spinner className="-left-2 text-[17px] text-white" />
+            <Spinner
+              className={cn(
+                "text-[17px] text-white",
+                size === "sm" ? "-left-1" : "-left-2"
+              )}
+            />
           </div>
           {props.children}
         </>

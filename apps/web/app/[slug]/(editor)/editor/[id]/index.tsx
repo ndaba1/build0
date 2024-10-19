@@ -12,11 +12,14 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
+import { useAuth } from "@/components/authenticator";
 import { TSEditor, useTsEditor } from "@/components/editor";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Template, patchTemplateSchema } from "@repo/database/schema";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { motion } from "framer-motion";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,22 +31,25 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export function TemplateEditor({ template }: { template: Template }) {
   const router = useRouter();
+  const { idToken } = useAuth();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const { jsCode, tsCode, setTsCode, onMount, monaco } = useTsEditor({
-    generatePdf(docDefinition) {
-      pdfMake.createPdf(docDefinition).getBlob((blob) => {
-        const url = URL.createObjectURL(blob);
+  const { jsCode, tsCode, setTsCode, onMount, monaco, compileAndPreview } =
+    useTsEditor({
+      generatePdf(docDefinition) {
+        pdfMake.createPdf(docDefinition).getBlob((blob) => {
+          const url = URL.createObjectURL(blob);
 
-        setPdfUrl((prev) => {
-          if (prev) {
-            URL.revokeObjectURL(prev);
-          }
-          return url;
+          setPdfUrl((prev) => {
+            if (prev) {
+              URL.revokeObjectURL(prev);
+            }
+            return url;
+          });
         });
-      });
-    },
-    initialCode: template.rawFunctionDefinition,
-  });
+      },
+      initialCode: template.rawFunctionDefinition,
+      previewPayload: template.previewPayload,
+    });
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (code: { jsCode: string; tsCode: string }) => {
@@ -57,14 +63,24 @@ export function TemplateEditor({ template }: { template: Template }) {
         cfg.body({
           functionDefinition: code.jsCode,
           rawFunctionDefinition: code.tsCode,
-        })
+        }),
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        }
       );
       router.refresh();
     },
   });
 
   return (
-    <main className="flex h-screen w-screen">
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: monaco ? 1 : 0 }}
+      transition={{ duration: 0.5 }}
+      className={cn("flex h-screen w-screen")}
+    >
       <div className="h-screen w-[50%]">
         <header className="w-full bg-white h-16 border-b flex items-center p-4 px-6 shadow-sm">
           <Button
@@ -78,7 +94,7 @@ export function TemplateEditor({ template }: { template: Template }) {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="text-base">
-                <Link href="/templates">Templates</Link>
+                <Link href="../templates">Templates</Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem className="text-base">
@@ -88,10 +104,14 @@ export function TemplateEditor({ template }: { template: Template }) {
           </Breadcrumb>
 
           <div className="ml-auto inline-flex gap-6">
-            <VariablesEditor monaco={monaco} template={template} />
+            <VariablesEditor
+              monaco={monaco}
+              template={template}
+              onPayloadChange={compileAndPreview}
+            />
 
             <Button
-              disabled={isPending}
+              loading={isPending}
               size="sm"
               onClick={() => {
                 mutate({ jsCode: jsCode || "", tsCode });
@@ -121,6 +141,6 @@ export function TemplateEditor({ template }: { template: Template }) {
           frameBorder="0"
         />
       ) : null}
-    </main>
+    </motion.main>
   );
 }

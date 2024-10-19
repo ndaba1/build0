@@ -1,14 +1,16 @@
 "use client";
 
+import { useAuth } from "@/components/authenticator";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { useProject } from "@/hooks/use-project";
 import { queryClient } from "@/lib/query-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createTemplateSchema } from "@repo/database/schema";
@@ -16,28 +18,42 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { handle } from "typed-handlers";
 import { z } from "zod";
 import { Advanced } from "./advanced";
 import { General } from "./general";
+import { formSchema } from "./utils";
 
-export default function CreateTemplate() {
+export function CreateTemplateForm() {
   const router = useRouter();
-  const form = useForm<z.infer<typeof createTemplateSchema>>({
-    resolver: zodResolver(createTemplateSchema),
+  const { idToken } = useAuth();
+  const { id: projectId, slug } = useProject();
+  const [redirecting, setRedirecting] = useState(false);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (values: z.infer<typeof createTemplateSchema>) => {
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
       const cfg = handle("/api/v1/templates", {
         bodySchema: createTemplateSchema,
       });
 
-      await axios.post(cfg.url, cfg.body(values));
+      const { data } = await axios.post(
+        cfg.url,
+        cfg.body({ ...values, projectId: projectId! }),
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        }
+      );
       await queryClient.invalidateQueries({ queryKey: ["templates"] });
 
-      router.replace("/templates");
+      setRedirecting(true);
+      router.replace(`/${slug}/editor/${data.template.id}`);
     },
   });
 
@@ -66,11 +82,16 @@ export default function CreateTemplate() {
                 </BreadcrumbList>
               </Breadcrumb>
               <div className="inline-flex gap-4">
-                <Button disabled={isPending} size="sm" variant="destructive">
+                <Button
+                  onClick={() => router.back()}
+                  disabled={isPending || redirecting}
+                  size="sm"
+                  variant="destructive"
+                >
                   Cancel
                 </Button>
                 <Button
-                  disabled={isPending}
+                  loading={isPending || redirecting}
                   type="submit"
                   size="sm"
                   variant="default"
