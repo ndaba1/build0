@@ -32,12 +32,13 @@ export function useTsEditor({
 } = {}) {
   const generatePdfRef = useRef(generatePdf);
   const [tsCode, setTsCode] = useState(initialCode);
+  const [jsCode, setJsCode] = useState<string | null>(null);
   const [debouncedCode] = useDebounce(tsCode, 600);
   const [monaco, setMonaco] = useState<typeof Monaco | null>(null);
   const [editor, setEditor] =
     useState<Monaco.editor.IStandaloneCodeEditor | null>(null);
 
-  const [jsCode, setJsCode] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Define custom types and inject them into Monaco's environment
   function onMount(
@@ -60,21 +61,26 @@ export function useTsEditor({
     const model = editor?.getModel();
     if (!monaco || !editor || !model) return;
 
-    const worker = await monaco.languages.typescript.getTypeScriptWorker();
-    const proxy = await worker(model.uri);
-    const output = await proxy.getEmitOutput(model.uri.toString());
-    const outputCode = output.outputFiles[0].text;
+    try {
+      const worker = await monaco.languages.typescript.getTypeScriptWorker();
+      const proxy = await worker(model.uri);
+      const output = await proxy.getEmitOutput(model.uri.toString());
+      const outputCode = output.outputFiles[0].text;
 
-    setJsCode(outputCode);
+      setJsCode(outputCode);
 
-    if (generatePdfRef.current) {
-      // TODO: move away from eval for security reasons
-      const generateFunc = eval(outputCode + "; generate");
+      if (generatePdfRef.current) {
+        // TODO: move away from eval for security reasons
+        const generateFunc = eval(outputCode + "; generate");
 
-      if (typeof generateFunc === "function") {
-        const docDefinition = generateFunc(payload);
-        generatePdfRef.current(docDefinition);
+        if (typeof generateFunc === "function") {
+          const docDefinition = generateFunc(payload);
+          generatePdfRef.current(docDefinition);
+        }
       }
+    } catch (e) {
+      console.error(e);
+      setError((e as z.infer<ZodAny>).message);
     }
   }
 
@@ -90,6 +96,7 @@ export function useTsEditor({
     onMount,
     monaco,
     editor,
+    error,
     compileAndPreview,
   };
 }

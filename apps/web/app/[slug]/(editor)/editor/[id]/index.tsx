@@ -33,23 +33,30 @@ export function TemplateEditor({ template }: { template: Template }) {
   const router = useRouter();
   const { idToken } = useAuth();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const { jsCode, tsCode, setTsCode, onMount, monaco, compileAndPreview } =
-    useTsEditor({
-      generatePdf(docDefinition) {
-        pdfMake.createPdf(docDefinition).getBlob((blob) => {
-          const url = URL.createObjectURL(blob);
+  const {
+    jsCode,
+    tsCode,
+    setTsCode,
+    onMount,
+    monaco,
+    compileAndPreview,
+    error,
+  } = useTsEditor({
+    generatePdf(docDefinition) {
+      pdfMake.createPdf(docDefinition).getBlob((blob) => {
+        const url = URL.createObjectURL(blob);
 
-          setPdfUrl((prev) => {
-            if (prev) {
-              URL.revokeObjectURL(prev);
-            }
-            return url;
-          });
+        setPdfUrl((prev) => {
+          if (prev) {
+            URL.revokeObjectURL(prev);
+          }
+          return url;
         });
-      },
-      initialCode: template.rawFunctionDefinition,
-      previewPayload: template.previewPayload,
-    });
+      });
+    },
+    initialCode: template.rawFunctionDefinition,
+    previewPayload: template.previewPayload,
+  });
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (code: { jsCode: string; tsCode: string }) => {
@@ -81,7 +88,7 @@ export function TemplateEditor({ template }: { template: Template }) {
       transition={{ duration: 0.5 }}
       className={cn("flex h-screen w-screen")}
     >
-      <div className="h-screen w-[50%]">
+      <div className="h-screen w-[50%] relative">
         <header className="w-full bg-white h-16 border-b flex items-center p-4 px-6 shadow-sm">
           <Button
             variant="outline"
@@ -132,6 +139,12 @@ export function TemplateEditor({ template }: { template: Template }) {
             setTsCode(value || "");
           }}
         />
+
+        {error ? (
+          <div className="absolute bottom-0">
+            <div className="bg-red-400 text-red-50 p-4">{error}</div>
+          </div>
+        ) : null}
       </div>
       {pdfUrl ? (
         <iframe

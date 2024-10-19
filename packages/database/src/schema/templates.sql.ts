@@ -80,15 +80,19 @@ export const templates = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
-    name: text("name").notNull().unique(),
+    name: text("name").notNull(),
     isActive: boolean("is_active").notNull().default(false),
     version: integer("version").notNull().default(1),
     payloadSchema: jsonb("payload_schema").notNull(),
+    previewPayload: jsonb("preview_payload"),
     description: text("description"),
     documentFormat: documentFormats("document_format").default("PDF"),
     documentTypeId: text("document_type_id")
       .notNull()
       .references(() => documentTypes.id),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at", {
       mode: "date",
@@ -105,6 +109,11 @@ export const templates = pgTable(
   },
   (t) => ({
     nameIndex: index("name_index").on(t.name),
+    uniqueProjectTemplate: unique("unique_project_template").on(
+      t.projectId,
+      t.name
+    ),
+    projectIndex: index("template_project_idx").on(t.projectId),
     documentTypeIndex: index("template_doc_type_idx").on(t.documentTypeId),
   })
 );
