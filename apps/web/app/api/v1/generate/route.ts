@@ -1,15 +1,16 @@
-import { withAuth } from "@/lib/auth/with-auth";
+import { env } from "@/env";
+import { withProject } from "@/lib/auth/with-project";
 import { payloadSchemaToZod, type PayloadSchema } from "@/lib/payload-schema";
 import { throwError } from "@/lib/throw-error";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { eq, sql } from "@repo/database";
 import { db } from "@repo/database/client";
 import {
-    Template,
-    createDocumentSchema,
-    documents,
-    jobs,
-    templates,
+  Template,
+  createDocumentSchema,
+  documents,
+  jobs,
+  templates,
 } from "@repo/database/schema";
 import { NextResponse } from "next/server";
 import path from "path";
@@ -29,7 +30,7 @@ const fonts = {
   },
 };
 
-export const POST = withAuth(async ({ req }) => {
+export const POST = withProject(async ({ req, project }) => {
   const templateName = req.nextUrl.searchParams.get("templateName");
   if (!templateName) {
     return throwError("A templateName query parameter is required", 400);
@@ -48,21 +49,22 @@ export const POST = withAuth(async ({ req }) => {
       return throwError("Template does not exist", 400);
     }
 
-    // if (!template.isActive) {
-    //   return throwError(
-    //     "Cannot generate a document from a template in draft mode",
-    //     400
-    //   );
-    // }
+    if (!template.isActive) {
+      return throwError(
+        "Cannot generate a document from a template in draft mode",
+        400
+      );
+    }
 
     const schema = payloadSchemaToZod(template.payloadSchema as PayloadSchema);
     const body = await req.json();
     const data = schema.parse(body);
 
     // start job
-    const job = await startJob(template, data);
+    const job = await startJob({ template, data, projectId: project.id });
     jobId = job.id;
 
+    // TODO: stop using eval -- unsafe
     const generateFunc = eval(template.functionDefinition + "; generate");
     if (typeof generateFunc !== "function") {
       return throwError(
@@ -76,22 +78,23 @@ export const POST = withAuth(async ({ req }) => {
     const pdfBuffer = await generatePdfBuffer(docDefinition);
 
     const s3Key = `${template.s3PathPrefix?.replace(/^\//g, "")}/${job.id}.pdf`;
-    const s3Url = await uploadPdfToS3(pdfBuffer, s3Key);
+    await uploadPdfToS3(pdfBuffer, s3Key);
+
+    const fileUrl = `${env.FILE_SERVER_URL}/doc/${s3Key}`;
 
     // complete job
     const doc = await completeJob(job.id, {
       s3Key,
       jobId: job.id,
-      document_url: s3Url,
+      document_url: fileUrl,
       templateId: template.id,
       templateVersion: template.version,
       templateVariables: data,
     });
 
     return NextResponse.json({
+      fileUrl,
       success: true,
-      url: `http://localhost:3000/api/v1/download/${doc.id}`,
-      preview: `http://localhost:3000/api/v1/download/${doc.id}?type=preview`,
     });
   } catch (e) {
     if (e instanceof z.ZodError) {
@@ -110,10 +113,19 @@ export const POST = withAuth(async ({ req }) => {
   }
 });
 
-async function startJob(template: Template, data: z.infer<ZodAny>) {
-  const results = await db
+async function startJob({
+  data,
+  template,
+  projectId,
+}: {
+  template: Template;
+  data: z.infer<ZodAny>;
+  projectId: string;
+}) {
+  const [job] = await db
     .insert(jobs)
     .values({
+      projectId,
       templateId: template.id,
       templateVersion: template.version,
       templateVariables: data,
@@ -122,7 +134,7 @@ async function startJob(template: Template, data: z.infer<ZodAny>) {
     })
     .returning();
 
-  return results[0];
+  return job;
 }
 
 async function completeJob(

@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
-import { tokens, users } from "@repo/database/schema";
+import { projects, tokens, users } from "@repo/database/schema";
 import axios from "axios";
 import { JWK, createLocalJWKSet, jwtVerify } from "jose";
 import { NextRequest } from "next/server";
@@ -29,14 +29,21 @@ export function withAuth<T = z.infer<ZodAny>>(
         .select({
           token: { id: tokens.id, scopes: tokens.scopes },
           user: { id: users.id, sub: users.sub },
+          project: { id: projects.id },
         })
         .from(tokens)
         .innerJoin(users, eq(tokens.userId, users.id))
+        .innerJoin(projects, eq(tokens.projectId, projects.id))
         .where(eq(tokens.hashedKey, hashedKey));
 
-      if (!accessToken) {
+      if (!accessToken || !accessToken.user || !accessToken.project) {
         return Response.json({ message: "Unauthorized" }, { status: 401 });
       }
+
+      await db
+        .update(tokens)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(tokens.id, accessToken.token.id));
 
       return handler({ req, params, ...accessToken });
     }

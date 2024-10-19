@@ -37,6 +37,11 @@ export function withProject<T = z.infer<ZodAny>>(
         return Response.json({ message: "Unauthorized" }, { status: 401 });
       }
 
+      await db
+        .update(tokens)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(tokens.id, accessToken.token.id));
+
       return handler({ req, params, ...accessToken });
     }
 

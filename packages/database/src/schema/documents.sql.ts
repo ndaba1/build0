@@ -1,13 +1,13 @@
 import { createId } from "@paralleldrive/cuid2";
 import { relations } from "drizzle-orm";
 import {
-    boolean,
-    index,
-    integer,
-    jsonb,
-    pgTable,
-    text,
-    timestamp,
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { jobs } from "./jobs.sql";
@@ -30,7 +30,12 @@ export const documents = pgTable(
     s3Key: text("s3_key").notNull(),
     document_url: text("url").notNull(),
     preview_url: text("preview_url"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
     updatedAt: timestamp("updated_at", {
       mode: "date",
       withTimezone: true,
@@ -39,6 +44,7 @@ export const documents = pgTable(
   },
   (t) => ({
     jobIdIndex: index("job_id_idx").on(t.jobId),
+    documentKeyIndex: index("document_key_idx").on(t.s3Key),
     templateIdIndex: index("doc_template_id_idx").on(t.templateId),
   })
 );

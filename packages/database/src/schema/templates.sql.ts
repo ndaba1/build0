@@ -25,7 +25,12 @@ export const variables = pgTable("variables", {
   description: text("description"),
   value: text("value").notNull(),
   secret: boolean("secret").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", {
+    mode: "date",
+    withTimezone: true,
+  })
+    .defaultNow()
+    .notNull(),
   updatedAt: timestamp("updated_at", {
     mode: "date",
     withTimezone: true,
@@ -45,7 +50,12 @@ export const documentTypes = pgTable(
     projectId: text("project_id")
       .notNull()
       .references(() => projects.id),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
     updatedAt: timestamp("updated_at", {
       mode: "date",
       withTimezone: true,
@@ -81,7 +91,7 @@ export const templates = pgTable(
       .primaryKey()
       .$defaultFn(() => createId()),
     name: text("name").notNull(),
-    isActive: boolean("is_active").notNull().default(false),
+    isActive: boolean("is_active").notNull().default(true),
     version: integer("version").notNull().default(1),
     payloadSchema: jsonb("payload_schema").notNull(),
     previewPayload: jsonb("preview_payload"),
@@ -93,7 +103,12 @@ export const templates = pgTable(
     projectId: text("project_id")
       .notNull()
       .references(() => projects.id),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
     updatedAt: timestamp("updated_at", {
       mode: "date",
       withTimezone: true,

@@ -28,6 +28,10 @@ const AUTH_ROUTES = new Set([
 
 const API_VERSION = "v1"; // current api version
 const API_HOSTNAMES = new Set(["api.build0.dev", "api.build0.local:3000"]);
+const FILE_SERVER_HOSTNAMES = new Set([
+  "files.build0.dev",
+  "files.build0.local:3000",
+]);
 
 export default async function middleware(request: NextRequest) {
   const host = request.headers.get("host") as string;
@@ -44,6 +48,12 @@ export default async function middleware(request: NextRequest) {
   if (API_HOSTNAMES.has(domain)) {
     return NextResponse.rewrite(
       new URL(`/api/${API_VERSION}${fullPath}`, request.url)
+    );
+  }
+
+  if (FILE_SERVER_HOSTNAMES.has(domain)) {
+    return NextResponse.rewrite(
+      new URL(`/api/${API_VERSION}/files${fullPath}`, request.url)
     );
   }
 

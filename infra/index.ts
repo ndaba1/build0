@@ -95,13 +95,19 @@ export const website = new sst.aws.Nextjs(
     domain: {
       name: "build0.dev",
       dns: sst.cloudflare.dns(),
-      aliases: ["api.build0.dev"],
+      aliases: ["api.build0.dev", "files.build0.dev"],
       redirects: ["www.build0.dev"],
     },
     environment: {
       NEXT_PUBLIC_AWS_REGION: "us-east-2",
       NEXT_PUBLIC_USER_POOL_ID: userPool.id,
       NEXT_PUBLIC_USER_POOL_CLIENT_ID: userPoolClient.id,
+
+      // file server url
+      FILE_SERVER_URL:
+        $app.stage === "dev"
+          ? "https://files.build0.dev"
+          : "http://localhost:3000/api/v1/files",
 
       // uncomment for self signup
       // ENABLE_SELF_SIGNUP: "true",
@@ -116,7 +122,7 @@ docBucket.subscribe(
     vpc,
     handler: "packages/previewer/src/index.handler",
     timeout: "10 minutes",
-    memory: "2048 MB",
+    memory: "3008 MB",
     link: [database, docBucket, imageBucket],
     nodejs: {
       install: ["@sparticuz/chromium", "puppeteer-core"],
@@ -124,7 +130,12 @@ docBucket.subscribe(
     name: `BuildZeroPreviewerFn-${$app.stage}`,
     environment: {
       IS_LOCAL: $app.stage !== "prod" ? "true" : undefined,
-      APP_URL: $app.stage === "prod" ? website.url : "http://localhost:3000",
+
+      // file server url
+      FILE_SERVER_URL:
+        $app.stage === "dev"
+          ? "https://files.build0.dev"
+          : "http://localhost:3000/api/v1/files",
     },
   },
   {

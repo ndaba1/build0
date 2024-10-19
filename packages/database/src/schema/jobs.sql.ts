@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { projects } from "./projects.sql";
 import { documentFormats, getTemplateSchema, templates } from "./templates.sql";
 
 export const jobs = pgTable(
@@ -21,17 +22,36 @@ export const jobs = pgTable(
     templateId: text("template_id")
       .notNull()
       .references(() => templates.id),
-    templateVersion: integer("template_version").notNull(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
     documentId: text("document_id"),
+
+    // triggered by another job
+    refJobId: text("ref_job_id"),
+
+    templateVersion: integer("template_version").notNull(),
     targetFormat: documentFormats("target_format").default("PDF"),
     templateVariables: jsonb("template_variables").notNull(),
     status: text("status").notNull().default("PENDING"),
-    startedAt: timestamp("started_at").defaultNow().notNull(),
-    endedAt: timestamp("ended_at"),
+
+    startedAt: timestamp("started_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+    endedAt: timestamp("ended_at", {
+      mode: "date",
+      withTimezone: true,
+    }),
+
     retries: integer("retries").notNull().default(0),
     errorMessage: text("error_message"),
   },
   (t) => ({
+    projectIdIndex: index("project_id_idx").on(t.projectId),
+    documentIdIndex: index("document_id_idx").on(t.documentId),
     templateIdIndex: index("job_template_id_idx").on(t.templateId),
   })
 );

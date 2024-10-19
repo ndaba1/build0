@@ -127,6 +127,8 @@ export const handler = async (event: S3Event) => {
           .values({
             status: "PENDING",
             startedAt: new Date(),
+            refJobId: pdfJob.id,
+            projectId: pdfJob.projectId,
             templateId: pdfJob.templateId,
             templateVersion: pdfJob.templateVersion,
             templateVariables: {},
@@ -142,8 +144,9 @@ export const handler = async (event: S3Event) => {
           .where(eq(documents.jobId, refJobId));
         const document = res[0];
 
-        const pdfUrl = `${process.env.APP_URL}/api/v1/download/${document.id}?type=file`;
+        const pdfUrl = `${process.env.FILE_SERVER_URL}/doc/${key}`;
         const screenshot = await generatePdfPreview(pdfUrl);
+        const previewUrl = `${process.env.FILE_SERVER_URL}/preview/${key}.png`;
 
         // image logic
         const client = new S3Client({});
@@ -159,12 +162,12 @@ export const handler = async (event: S3Event) => {
         await db
           .update(documents)
           .set({
-            preview_url: `${process.env.APP_URL}/api/v1/download/${document.id}?type=preview`,
+            preview_url: previewUrl,
           })
           .where(eq(documents.jobId, refJobId));
 
         console.log(
-          `Updated document ${document.id} with preview url ${document.preview_url}`
+          `Updated document ${document.id} with preview url ${previewUrl}`
         );
 
         // complete job
