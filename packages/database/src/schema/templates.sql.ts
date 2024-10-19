@@ -9,9 +9,11 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { projects } from "./projects.sql";
 
 export const documentFormats = pgEnum("document_formats", ["PDF", "IMAGE"]);
 
@@ -31,20 +33,34 @@ export const variables = pgTable("variables", {
   isDeleted: boolean("is_deleted").notNull().default(false),
 });
 
-export const documentTypes = pgTable("document_types", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-  s3PathPrefix: text("s3_path_prefix").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-  isDeleted: boolean("is_deleted").notNull().default(false),
-});
+export const documentTypes = pgTable(
+  "document_types",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    name: text("name").notNull(),
+    description: text("description"),
+    s3PathPrefix: text("s3_path_prefix").notNull(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "date",
+      withTimezone: true,
+    }).$onUpdate(() => new Date()),
+    isDeleted: boolean("is_deleted").notNull().default(false),
+  },
+  (t) => ({
+    uniqueProjectDocType: unique("unique_project_doc_type").on(
+      t.projectId,
+      t.name
+    ),
+    nameIndex: index("document_type_name_index").on(t.name),
+    projectIndex: index("document_type_project_idx").on(t.projectId),
+  })
+);
 
 export const getDocumentTypeSchema = createSelectSchema(documentTypes, {
   createdAt: z.string(),

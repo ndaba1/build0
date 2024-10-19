@@ -1,35 +1,44 @@
 import { env } from "@/env";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
-import { User, tokens, users } from "@repo/database/schema";
+import { tokens, users } from "@repo/database/schema";
 import axios from "axios";
 import { JWK, createLocalJWKSet, jwtVerify } from "jose";
 import { NextRequest } from "next/server";
 import { ZodAny, z } from "zod";
-import { redis } from "./redis";
+import { hashToken } from "../hash-token";
+import { redis } from "../redis";
 
 export function withAuth<T = z.infer<ZodAny>>(
   handler: (args: {
     req: NextRequest;
     params: T;
-    user: User;
+    user: { id: string; sub: string };
+    token?: { id: string; scopes: string | null };
   }) => Promise<Response>
 ) {
   return async (req: NextRequest, { params }: { params: T }) => {
+    // TODO: refine project auth and provide better error responses!
     const bearer = req.headers.get("Authorization");
     const token = bearer?.replace("Bearer ", "");
 
     // using an access token
     if (token?.startsWith("b0")) {
-      console.log("Using access token");
-      const accessToken = await db
-        .select()
+      const hashedKey = await hashToken(token);
+      const [accessToken] = await db
+        .select({
+          token: { id: tokens.id, scopes: tokens.scopes },
+          user: { id: users.id, sub: users.sub },
+        })
         .from(tokens)
-        .where(eq(tokens.hashedKey, token));
+        .innerJoin(users, eq(tokens.userId, users.id))
+        .where(eq(tokens.hashedKey, hashedKey));
 
-      if (accessToken.length === 0) {
+      if (!accessToken) {
         return Response.json({ message: "Unauthorized" }, { status: 401 });
       }
+
+      return handler({ req, params, ...accessToken });
     }
     // using dashboard session
     else if (token) {
@@ -42,11 +51,10 @@ export function withAuth<T = z.infer<ZodAny>>(
         return Response.json({ message: "Unauthorized" }, { status: 401 });
       }
 
-      const results = await db
-        .select()
+      const [user] = await db
+        .select({ id: users.id, sub: users.sub })
         .from(users)
         .where(eq(users.sub, payload.sub));
-      const user = results[0];
 
       if (!user) {
         return Response.json({ message: "Unauthorized" }, { status: 401 });

@@ -1,15 +1,15 @@
+import { withAuth } from "@/lib/auth/with-auth";
 import { payloadSchemaToZod, type PayloadSchema } from "@/lib/payload-schema";
 import { throwError } from "@/lib/throw-error";
-import { withAuth } from "@/lib/with-auth";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { eq, sql } from "@repo/database";
 import { db } from "@repo/database/client";
 import {
-  Template,
-  createDocumentSchema,
-  documents,
-  jobs,
-  templates,
+    Template,
+    createDocumentSchema,
+    documents,
+    jobs,
+    templates,
 } from "@repo/database/schema";
 import { NextResponse } from "next/server";
 import path from "path";

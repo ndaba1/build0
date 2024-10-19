@@ -31,6 +31,7 @@ const links = [
   {
     label: "Variables",
     href: "/variables",
+    disabled: true,
     icon: Code2Icon,
   },
   {
@@ -74,7 +75,9 @@ export function SettingsNavigation() {
             <Link
               className={cn(
                 "md:hover:bg-muted-foreground/10 flex items-center gap-2 w-full border-b px-4 py-6 text-lg md:rounded-md md:border-none md:py-3 md:text-base",
-                !isActive(link.href) ? "text-muted-foreground" : "font-medium"
+                !isActive(link.href) ? "text-muted-foreground" : "font-medium",
+                link.disabled &&
+                  "cursor-not-allowed pointer-events-none"
               )}
               href={link.href}
             >

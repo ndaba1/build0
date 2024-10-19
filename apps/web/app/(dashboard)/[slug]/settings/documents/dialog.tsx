@@ -1,3 +1,6 @@
+"use client";
+
+import { useAuth } from "@/components/authenticator";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,41 +20,63 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useProject } from "@/hooks/use-project";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createDocumentTypeSchema } from "@repo/database/schema";
+import slugify from "@sindresorhus/slugify";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { handle } from "typed-handlers";
 import { z } from "zod";
 
-export function DocumentTypeDialog({
-  onSuccess,
-  showDialog,
-  setShowDialog,
-}: {
-  onSuccess: () => void;
-  showDialog: boolean;
-  setShowDialog: (show: boolean) => void;
-}) {
-  const form = useForm<z.infer<typeof createDocumentTypeSchema>>({
-    resolver: zodResolver(createDocumentTypeSchema),
+const formSchema = createDocumentTypeSchema.extend({
+  projectId: z.string().optional(),
+});
+
+export function DocumentTypeDialog() {
+  const router = useRouter();
+  const { idToken } = useAuth();
+  const { id: projectId } = useProject();
+  const [showDialog, setShowDialog] = useState(false);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (values: z.infer<typeof createDocumentTypeSchema>) => {
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
       const cfg = handle("/api/v1/document-types", {
-        bodySchema: createDocumentTypeSchema,
+        bodySchema: formSchema,
       });
 
-      await axios.post(cfg.url, cfg.body(values));
+      await axios.post(
+        cfg.url,
+        cfg.body({
+          ...values,
+          projectId: projectId!,
+        }),
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        }
+      );
 
-      onSuccess();
+      router.refresh();
       setShowDialog(false);
       form.reset();
     },
   });
+
+  const watch = form.watch();
+  const formRef = useRef(form);
+
+  useEffect(() => {
+    formRef.current.setValue("s3PathPrefix", slugify(watch.name || ""));
+  }, [watch.name]);
 
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -61,14 +86,14 @@ export function DocumentTypeDialog({
           Add Type
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-0 rounded-2xl overflow-hidden">
-        <DialogHeader className="border-b p-6 bg-muted">
+      <DialogContent className="sm:max-w-[425px] p-0">
+        <DialogHeader className="border-b p-6">
           <DialogTitle>Create Document Type</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => mutate(v))}>
-            <div className="px-6 space-y-4">
+            <div className="px-6 pb-6 space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -76,10 +101,14 @@ export function DocumentTypeDialog({
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="invoice,quotation,etc." {...field} />
+                      <Input
+                        placeholder="invoice,quotation,etc."
+                        {...field}
+                        value={slugify(field.value || "")}
+                      />
                     </FormControl>
                     <FormDescription>
-                      This must be a unique value
+                      Must be unique, lowercase and contain no spaces
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -112,13 +141,13 @@ export function DocumentTypeDialog({
                     <FormLabel>S3 Prefix</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="/invoices"
+                        placeholder="invoices"
                         {...field}
-                        value={field.value || ""}
+                        value={slugify(field.value || "")}
                       />
                     </FormControl>
                     <FormDescription>
-                      The S3 prefix where documents will be stored
+                      Cannot contain spaces or special characters
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -127,11 +156,8 @@ export function DocumentTypeDialog({
             </div>
 
             <DialogFooter className="border-t p-6 py-4 flex items-center justify-end gap-4">
-              <Button disabled={isPending} size="sm" variant="destructive">
-                Cancel
-              </Button>
-              <Button disabled={isPending} size="sm" type="submit">
-                Save
+              <Button loading={isPending} type="submit">
+                Save Changes
               </Button>
             </DialogFooter>
           </form>

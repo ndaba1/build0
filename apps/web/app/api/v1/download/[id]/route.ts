@@ -1,5 +1,5 @@
+import { withAuth } from "@/lib/auth/with-auth";
 import { throwError } from "@/lib/throw-error";
-import { withAuth } from "@/lib/with-auth";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";

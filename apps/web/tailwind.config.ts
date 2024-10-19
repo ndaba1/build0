@@ -189,6 +189,7 @@ const config: Config = {
       fontFamily: {
         cal: ["var(--font-cal)", ...fontFamily.sans],
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
+        mono: ["var(--font-geist-mono)", ...fontFamily.mono],
       },
     },
   },

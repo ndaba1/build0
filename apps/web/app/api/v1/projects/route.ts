@@ -1,4 +1,4 @@
-import { withAuth } from "@/lib/with-auth";
+import { withAuth } from "@/lib/auth/with-auth";
 import { db } from "@repo/database/client";
 import {
   createProjectSchema,

@@ -27,12 +27,9 @@ export function ProjectMember({
 
   return (
     <section
-      className={cn(
-        "flex items-center justify-between p-4 px-6",
-        idx !== 0 && "border-t"
-      )}
+      className={cn("grid grid-cols-12 items-center p-4 px-6", idx !== 0 && "border-t")}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 col-span-6">
         <Avatar className={cn("h-12 w-12 cursor-pointer")}>
           <AvatarImage alt="avatar" src={""} />
           <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
@@ -43,13 +40,15 @@ export function ProjectMember({
         </div>
       </div>
 
-      {member.role === "ADMIN" ? (
-        <Badge variant="default">Admin</Badge>
-      ) : (
-        <Badge variant="neutral">Member</Badge>
-      )}
+      <div className="col-span-2">
+        {member.role === "ADMIN" ? (
+          <Badge variant="default">Admin</Badge>
+        ) : (
+          <Badge variant="neutral">Member</Badge>
+        )}
+      </div>
 
-      <div className="inline-flex items-center gap-4">
+      <div className="inline-flex items-center justify-end gap-4 col-span-4">
         <p className="text-sm text-muted-foreground">Added {added}</p>
 
         <MoreVerticalIcon className="cursor-pointer w-6 h-6" />

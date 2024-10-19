@@ -1,10 +1,10 @@
-import { withAuth } from "@/lib/with-auth";
+import { withAuth } from "@/lib/auth/with-auth";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
 import {
-  createTemplateSchema,
-  documentTypes,
-  templates,
+    createTemplateSchema,
+    documentTypes,
+    templates,
 } from "@repo/database/schema";
 import { NextResponse } from "next/server";
 import { ZodAny, z } from "zod";

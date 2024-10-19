@@ -1,5 +1,5 @@
+import { withAuth } from "@/lib/auth/with-auth";
 import { throwError } from "@/lib/throw-error";
-import { withAuth } from "@/lib/with-auth";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
 import {

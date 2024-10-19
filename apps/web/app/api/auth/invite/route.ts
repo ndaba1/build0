@@ -1,9 +1,10 @@
+import { withAuth } from "@/lib/auth/with-auth";
 import { throwError } from "@/lib/throw-error";
-import { withAuth } from "@/lib/with-auth";
 import {
-    AdminCreateUserCommand,
-    CognitoIdentityProviderClient,
+  AdminCreateUserCommand,
+  CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
+import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
 import { projectUsers, users } from "@repo/database/schema";
 import { NextResponse } from "next/server";
@@ -24,6 +25,11 @@ export const POST = withAuth(async ({ req, user }) => {
   try {
     const body = await req.json();
     const data = schema.parse(body);
+
+    const [invitedBy] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, user.id));
 
     const client = new CognitoIdentityProviderClient({});
 
@@ -46,8 +52,8 @@ export const POST = withAuth(async ({ req, user }) => {
       ],
       DesiredDeliveryMediums: ["EMAIL"],
       ClientMetadata: {
-        invitedByName: user.name,
-        invitedByEmail: user.email,
+        invitedByName: invitedBy.name,
+        invitedByEmail: invitedBy.email,
       },
     });
 
