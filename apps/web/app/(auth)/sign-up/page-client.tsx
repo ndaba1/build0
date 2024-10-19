@@ -7,19 +7,19 @@ import { Loader } from "@/components/loader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
@@ -66,7 +66,7 @@ export function SignUpForm() {
 
   const { isPending, mutate } = useMutation({
     mutationFn: async (values: z.infer<typeof schema>) => {
-      const { userId, nextStep } = await signUp({
+      const { nextStep } = await signUp({
         username: values.email,
         password: values.password,
         options: {
@@ -77,14 +77,6 @@ export function SignUpForm() {
           autoSignIn: true,
         },
       });
-
-    //   if (userId) {
-    //     const cfg = handle("/api/auth/create");
-    //     await axios.post(cfg.url, {
-    //       ...values,
-    //       userId,
-    //     });
-    //   }
 
       if (nextStep.signUpStep === "CONFIRM_SIGN_UP") {
         setStep("verify");

@@ -63,7 +63,7 @@ const region = env.NEXT_PUBLIC_AWS_REGION;
 const userPoolId = env.NEXT_PUBLIC_USER_POOL_ID;
 const cognitoIssuer = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
 const jwksUri = `${cognitoIssuer}/.well-known/jwks.json`;
-const JWKS_CACHE_KEY = "cognito:jwks";
+const JWKS_CACHE_KEY = `cognito_${userPoolId}:jwks`;
 
 type AccessTokenPayload = {
   sub: string;

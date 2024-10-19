@@ -4,10 +4,12 @@ import {
   Card,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
 import OnboardingForm from "./form";
+
+export const dynamic = "force-dynamic";
 
 export default function Onboarding() {
   return (

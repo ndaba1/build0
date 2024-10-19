@@ -22,7 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { confirmSignIn } from "aws-amplify/auth";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -48,6 +49,8 @@ export function NewPasswordRequired({
 }: {
   missingAttributes: string[];
 }) {
+  const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const schema = z.object({
     name: z.string().optional(),
     password: pwd,
@@ -73,8 +76,9 @@ export function NewPasswordRequired({
         },
       });
 
-      if (isSignedIn) {
-        redirect("/home");
+      if (isSignedIn || nextStep.signInStep === "DONE") {
+        setIsRedirecting(true);
+        router.replace("/");
       }
     },
   });
@@ -151,7 +155,11 @@ export function NewPasswordRequired({
                 )}
               />
 
-              <Button loading={isPending} type="submit" className="w-full">
+              <Button
+                loading={isPending || isRedirecting}
+                type="submit"
+                className="w-full"
+              >
                 Login
               </Button>
             </form>

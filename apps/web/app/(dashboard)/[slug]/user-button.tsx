@@ -1,18 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@/components/authenticator";
 import { cn, getInitials } from "@/lib/utils";
 import {
   BookOpenTextIcon,
-  CogIcon,
-  GlobeIcon,
-  GroupIcon,
   LogOutIcon,
-  User2Icon,
-  UserPlusIcon,
+  User2Icon
 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -21,12 +17,10 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
 
-export function UserButton() {
+export function UserButton({className}: {className?: string}) {
   const { signOut, userAttributes } = useAuth();
   const [open, setOpen] = useState(false);
 
@@ -52,7 +46,7 @@ export function UserButton() {
     <DropdownMenu onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger asChild>
         <Avatar
-          className={cn("h-9 w-9 cursor-pointer")}
+          className={cn("h-9 w-9 cursor-pointer", className)}
           onClick={() => setOpen((o) => !o)}
         >
           <AvatarImage alt="avatar" src={""} />
