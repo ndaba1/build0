@@ -17,7 +17,7 @@ export const config = {
   ],
 };
 
-const PUBLIC_ROUTES = new Set(["/", "/teams", "/pricing"]);
+const PUBLIC_ROUTES = new Set(["/", "/home", "/teams", "/pricing"]);
 
 const AUTH_ROUTES = new Set([
   "/sign-in",
@@ -91,18 +91,23 @@ export default async function middleware(request: NextRequest) {
 }
 
 async function getUser(request: NextRequest, response: NextResponse) {
-  const user = await runWithAmplifyServerContext({
-    nextServerContext: { request, response },
-    operation: async (contextSpec) => {
-      try {
-        const attributes = await fetchUserAttributes(contextSpec);
-        return attributes;
-      } catch (error) {
-        console.log(error);
-        return null;
-      }
-    },
-  });
+  try {
+    const user = await runWithAmplifyServerContext({
+      nextServerContext: { request, response },
+      operation: async (contextSpec) => {
+        try {
+          const attributes = await fetchUserAttributes(contextSpec);
+          return attributes;
+        } catch (error) {
+          console.log(error);
+          return null;
+        }
+      },
+    });
 
-  return user;
+    return user;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
 }
