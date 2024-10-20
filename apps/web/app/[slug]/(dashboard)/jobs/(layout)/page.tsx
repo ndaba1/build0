@@ -1,46 +1,36 @@
-"use client";
-
-import { useAuth } from "@/components/authenticator";
-import { Loader } from "@/components/loader";
 import { Card } from "@/components/ui/card";
-import { useProject } from "@/hooks/use-project";
-import { listJobsSchema } from "@repo/database/schema";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { and, desc, eq, isNull } from "@repo/database";
+import { db } from "@repo/database/client";
+import { getJobSchema, jobs, projects, templates } from "@repo/database/schema";
 import { FileScanIcon } from "lucide-react";
-import { handle } from "typed-handlers";
 import { z } from "zod";
 import { JobCard } from "./job-card";
 
-export default function Jobs() {
-  const { idToken } = useAuth();
-  const { id: projectId } = useProject();
-  const { data, isLoading } = useQuery({
-    queryKey: ["jobs-listing"],
-    queryFn: async () => {
-      const cfg = handle("/api/v1/jobs", {
-        query: { projectId: projectId! },
-      });
+export const dynamic = "force-dynamic";
 
-      const { data } = await axios.get<{
-        jobs: z.infer<typeof listJobsSchema>;
-      }>(cfg.url, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      });
-
-      return data.jobs;
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <div className="relative w-full h-96">
-        <Loader fullScreen={false} showLogo={false} />;
-      </div>
-    );
-  }
+export default async function Jobs({ params }: { params: { slug: string } }) {
+  // load root jobs only
+  const data = await db
+    .select({
+      id: jobs.id,
+      startedAt: jobs.startedAt,
+      endedAt: jobs.endedAt,
+      status: jobs.status,
+      targetFormat: jobs.targetFormat,
+      documentId: jobs.documentId,
+      templateId: jobs.templateId,
+      projectId: jobs.projectId,
+      template: {
+        id: templates.id,
+        name: templates.name,
+      },
+    })
+    .from(jobs)
+    .innerJoin(templates, eq(jobs.templateId, templates.id))
+    .innerJoin(projects, eq(jobs.projectId, projects.id))
+    .where(and(eq(projects.slug, params.slug), isNull(jobs.refJobId)))
+    .limit(12)
+    .orderBy(desc(jobs.startedAt));
 
   return (
     <div>
@@ -60,7 +50,11 @@ export default function Jobs() {
       {data?.length ? (
         <Card className="rounded-2xl my-8">
           {data.map((job, idx) => (
-            <JobCard key={job.id} job={job} idx={idx} />
+            <JobCard
+              key={job.id}
+              job={job as unknown as z.infer<typeof getJobSchema>}
+              idx={idx}
+            />
           ))}
         </Card>
       ) : null}

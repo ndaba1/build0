@@ -50,6 +50,7 @@ export const jobs = pgTable(
     errorMessage: text("error_message"),
   },
   (t) => ({
+    refJobIdIndex: index("ref_job_id_idx").on(t.refJobId),
     projectIdIndex: index("project_id_idx").on(t.projectId),
     documentIdIndex: index("document_id_idx").on(t.documentId),
     templateIdIndex: index("job_template_id_idx").on(t.templateId),

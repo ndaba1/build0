@@ -4,7 +4,7 @@ import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Resource } from "sst";
 import { Params } from "typed-handlers";
 
-export const GET = withDocument<Params<"/api/v1/files/doc/[...s3Key]">>(
+export const GET = withDocument<Params<"/api/v1/files/document/[...s3Key]">>(
   async ({ req, params, document }) => {
     const s3 = new S3Client({});
     const docKey = params.s3Key.join("/");

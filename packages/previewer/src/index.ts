@@ -76,9 +76,7 @@ async function generatePdfPreview(pdfUrl: string) {
     defaultViewport: null,
     executablePath: isLocal
       ? "/tmp/localChromium/chromium/mac_arm-1368315/chrome-mac/Chromium.app/Contents/MacOS/Chromium"
-      : await chromium.executablePath(
-          "/opt/nodejs/node_modules/@sparticuz/chromium/bin"
-        ),
+      : await chromium.executablePath(),
     args: isLocal ? puppeteer.defaultArgs() : chromium.args,
   });
 
@@ -154,12 +152,11 @@ export const handler = async (event: S3Event) => {
 
         const jwt = await new SignJWT({ id: document.id })
           .setProtectedHeader({ alg: "HS256" })
-          .setExpirationTime("5 minutes")
           .sign(secret);
 
         const pdfUrl = `${process.env.FILE_SERVER_URL}/document/${key}?token=${jwt}`;
         const screenshot = await generatePdfPreview(pdfUrl);
-        const previewUrl = `${process.env.FILE_SERVER_URL}/preview/${key}.png`;
+        const previewUrl = `${process.env.FILE_SERVER_URL}/preview/${key}.png?token=${jwt}`;
 
         // image logic
         const client = new S3Client({});

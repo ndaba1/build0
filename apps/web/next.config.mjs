@@ -11,6 +11,16 @@ const nextConfig = withTypedHandlers({
   experimental: {
     serverComponentsExternalPackages: ["pdfmake"],
   },
+  images: {
+    remotePatterns: [
+      {
+        hostname: "files.build0.dev",
+      },
+      {
+        hostname: "assets.build0.dev",
+      },
+    ],
+  },
 });
 
 export default nextConfig;

@@ -131,7 +131,7 @@ docBucket.subscribe(
     },
     name: `BuildZeroPreviewerFn-${$app.stage}`,
     environment: {
-      IS_LOCAL: $app.stage !== "prod" ? "true" : undefined,
+      IS_LOCAL: process.env.IS_LOCAL,
 
       // file server url
       FILE_SERVER_URL:
