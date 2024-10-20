@@ -29,6 +29,7 @@ export const users = pgTable(
   (t) => ({
     subIdx: index("sub_idx").on(t.sub),
     emailIdx: index("email_idx").on(t.email),
+    isMachineIdx: index("is_machine_idx").on(t.isMachine),
   })
 );
 

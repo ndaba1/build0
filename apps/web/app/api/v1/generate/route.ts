@@ -12,6 +12,7 @@ import {
   jobs,
   templates,
 } from "@repo/database/schema";
+import { SignJWT } from "jose";
 import { NextResponse } from "next/server";
 import path from "path";
 import PdfPrinter from "pdfmake";
@@ -80,17 +81,28 @@ export const POST = withProject(async ({ req, project }) => {
     const s3Key = `${template.s3PathPrefix?.replace(/^\//g, "")}/${job.id}.pdf`;
     await uploadPdfToS3(pdfBuffer, s3Key);
 
-    const fileUrl = `${env.FILE_SERVER_URL}/doc/${s3Key}`;
-
     // complete job
     const doc = await completeJob(job.id, {
       s3Key,
       jobId: job.id,
-      document_url: fileUrl,
+      document_url: `${env.FILE_SERVER_URL}/document/${s3Key}`,
       templateId: template.id,
       templateVersion: template.version,
       templateVariables: data,
     });
+
+    const secret = new TextEncoder().encode(env.DOCUMENT_TOKEN_SECRET);
+    const jwt = await new SignJWT({ id: doc.id })
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(secret);
+
+    const fileUrl = `${doc.document_url}?token=${jwt}`;
+    await db
+      .update(documents)
+      .set({
+        document_url: fileUrl,
+      })
+      .where(eq(documents.id, doc.id));
 
     return NextResponse.json({
       fileUrl,
@@ -203,7 +215,7 @@ async function generatePdfBuffer(
   });
 }
 
-async function uploadPdfToS3(buffer: Buffer, key: string): Promise<string> {
+async function uploadPdfToS3(buffer: Buffer, key: string) {
   const command = new PutObjectCommand({
     Key: key,
     Bucket: Resource.BuildZeroBucket.name,
@@ -213,6 +225,4 @@ async function uploadPdfToS3(buffer: Buffer, key: string): Promise<string> {
 
   const client = new S3Client({});
   await client.send(command);
-
-  return `https://${Resource.BuildZeroBucket.name}.s3.amazonaws.com/${key}`;
 }

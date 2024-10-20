@@ -44,6 +44,7 @@ export const documents = pgTable(
   },
   (t) => ({
     jobIdIndex: index("job_id_idx").on(t.jobId),
+    s3KeyIndex: index("s3_key_idx").on(t.s3Key),
     documentKeyIndex: index("document_key_idx").on(t.s3Key),
     templateIdIndex: index("doc_template_id_idx").on(t.templateId),
   })

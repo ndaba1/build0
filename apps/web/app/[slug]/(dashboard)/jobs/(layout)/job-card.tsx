@@ -85,7 +85,7 @@ export function JobCard({
 
       <div className="col-span-3 justify-end inline-flex items-center gap-4">
         <Link
-          href={`/jobs/${job.id}`}
+          href={`jobs/${job.id}`}
           className={buttonVariants({
             variant: "outline",
             size: "sm",

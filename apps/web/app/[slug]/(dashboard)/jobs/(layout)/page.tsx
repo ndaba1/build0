@@ -1,52 +1,44 @@
 "use client";
 
+import { useAuth } from "@/components/authenticator";
+import { Loader } from "@/components/loader";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { useProject } from "@/hooks/use-project";
 import { listJobsSchema } from "@repo/database/schema";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import {
-  FileScanIcon
-} from "lucide-react";
+import { FileScanIcon } from "lucide-react";
 import { handle } from "typed-handlers";
 import { z } from "zod";
 import { JobCard } from "./job-card";
 
 export default function Jobs() {
+  const { idToken } = useAuth();
+  const { id: projectId } = useProject();
   const { data, isLoading } = useQuery({
     queryKey: ["jobs-listing"],
     queryFn: async () => {
-      const cfg = handle("/api/v1/jobs");
+      const cfg = handle("/api/v1/jobs", {
+        query: { projectId: projectId! },
+      });
 
       const { data } = await axios.get<{
         jobs: z.infer<typeof listJobsSchema>;
-      }>(cfg.url);
+      }>(cfg.url, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
 
       return data.jobs;
     },
   });
 
   if (isLoading) {
-    const arr = Array.from(Array(10).keys());
     return (
-      <Card className="rounded-xl my-8">
-        {arr.map((i, idx) => (
-          <section
-            key={i}
-            className={cn(
-              "p-6 grid gap-4 grid-cols-12",
-              idx !== 0 && "border-t"
-            )}
-          >
-            <Skeleton className="col-span-3 h-6" />
-            <Skeleton className="col-span-2 h-6" />
-            <Skeleton className="col-span-2 h-6" />
-            <Skeleton className="col-span-2 h-6" />
-            <Skeleton className="col-span-3 h-6" />
-          </section>
-        ))}
-      </Card>
+      <div className="relative w-full h-96">
+        <Loader fullScreen={false} showLogo={false} />;
+      </div>
     );
   }
 

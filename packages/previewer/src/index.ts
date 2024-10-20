@@ -4,6 +4,7 @@ import { db } from "@repo/database/client";
 import { documents, jobs } from "@repo/database/schema";
 import chromium from "@sparticuz/chromium";
 import { S3Event } from "aws-lambda";
+import { SignJWT } from "jose";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
 import { ZodAny, z } from "zod";
@@ -144,7 +145,19 @@ export const handler = async (event: S3Event) => {
           .where(eq(documents.jobId, refJobId));
         const document = res[0];
 
-        const pdfUrl = `${process.env.FILE_SERVER_URL}/doc/${key}`;
+        const tokenSecret = process.env.DOCUMENT_TOKEN_SECRET;
+        if (!tokenSecret) {
+          throw new Error("Token secret is not defined");
+        }
+
+        const secret = new TextEncoder().encode(tokenSecret);
+
+        const jwt = await new SignJWT({ id: document.id })
+          .setProtectedHeader({ alg: "HS256" })
+          .setExpirationTime("5 minutes")
+          .sign(secret);
+
+        const pdfUrl = `${process.env.FILE_SERVER_URL}/document/${key}?token=${jwt}`;
         const screenshot = await generatePdfPreview(pdfUrl);
         const previewUrl = `${process.env.FILE_SERVER_URL}/preview/${key}.png`;
 

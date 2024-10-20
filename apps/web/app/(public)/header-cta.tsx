@@ -3,6 +3,7 @@
 import { useAuth } from "@/components/authenticator";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { UserButton } from "../[slug]/(dashboard)/user-button";
 
@@ -10,10 +11,12 @@ export function HeaderCTA() {
   const { loading, userAttributes } = useAuth();
 
   return (
-    <section
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ opacity: loading ? 0 : 1 }}
+      transition={{ duration: 0.2 }}
       className={cn(
-        "z-10 flex items-center gap-5 col-span-3 justify-end transition-all duration-150",
-        loading ? "invisible" : "visible"
+        "z-10 flex items-center gap-5 col-span-3 justify-end transition-all duration-150"
       )}
     >
       {!userAttributes?.sub ? (
@@ -57,6 +60,6 @@ export function HeaderCTA() {
           <UserButton className="h-10 w-10" />
         </>
       )}
-    </section>
+    </motion.section>
   );
 }

@@ -1,13 +1,18 @@
-import { withAuth } from "@/lib/auth/with-auth";
+import { withDocument } from "@/lib/auth/with-document";
 import { throwError } from "@/lib/throw-error";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Resource } from "sst";
 import { Params } from "typed-handlers";
 
-export const GET = withAuth<Params<"/api/v1/files/doc/[...s3Key]">>(
-  async ({ req, params }) => {
+export const GET = withDocument<Params<"/api/v1/files/doc/[...s3Key]">>(
+  async ({ req, params, document }) => {
     const s3 = new S3Client({});
     const docKey = params.s3Key.join("/");
+
+    if (document.s3Key !== docKey) {
+      return throwError("Unauthorized", 401);
+    }
+
     const command = new GetObjectCommand({
       Bucket: Resource.BuildZeroBucket.name,
       Key: docKey,

@@ -109,6 +109,8 @@ export const website = new sst.aws.Nextjs(
           ? "https://files.build0.dev"
           : "http://localhost:3000/api/v1/files",
 
+      DOCUMENT_TOKEN_SECRET: process.env.DOCUMENT_TOKEN_SECRET,
+
       // uncomment for self signup
       // ENABLE_SELF_SIGNUP: "true",
     },
@@ -136,6 +138,8 @@ docBucket.subscribe(
         $app.stage === "dev"
           ? "https://files.build0.dev"
           : "http://localhost:3000/api/v1/files",
+
+      DOCUMENT_TOKEN_SECRET: process.env.DOCUMENT_TOKEN_SECRET,
     },
   },
   {
