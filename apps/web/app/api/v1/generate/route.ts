@@ -32,9 +32,14 @@ const fonts = {
 };
 
 export const POST = withProject(async ({ req, project }) => {
+  const documentName = req.nextUrl.searchParams.get("documentName");
   const templateName = req.nextUrl.searchParams.get("templateName");
   if (!templateName) {
-    return throwError("A templateName query parameter is required", 400);
+    return throwError("Template name must be provided", 400);
+  }
+
+  if (!documentName) {
+    return throwError("Document name must be provided", 400);
   }
 
   let jobId: string | undefined;
@@ -85,10 +90,12 @@ export const POST = withProject(async ({ req, project }) => {
     const doc = await completeJob(job.id, {
       s3Key,
       jobId: job.id,
-      document_url: `${env.FILE_SERVER_URL}/document/${s3Key}`,
+      name: documentName,
+      documentUrl: `${env.FILE_SERVER_URL}/document/${s3Key}`,
       templateId: template.id,
       templateVersion: template.version,
       templateVariables: data,
+      projectId: project.id,
     });
 
     const secret = new TextEncoder().encode(env.DOCUMENT_TOKEN_SECRET);
@@ -96,11 +103,11 @@ export const POST = withProject(async ({ req, project }) => {
       .setProtectedHeader({ alg: "HS256" })
       .sign(secret);
 
-    const fileUrl = `${doc.document_url}?token=${jwt}`;
+    const fileUrl = `${doc.documentUrl}?token=${jwt}`;
     await db
       .update(documents)
       .set({
-        document_url: fileUrl,
+        documentUrl: fileUrl,
       })
       .where(eq(documents.id, doc.id));
 

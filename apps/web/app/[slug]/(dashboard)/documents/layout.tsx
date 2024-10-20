@@ -1,7 +1,7 @@
 import { DashboardPage } from "@/components/layout";
 import React from "react";
 
-export default function JobsLayout({
+export default function DocumentsLayout({
   children,
 }: {
   children: React.ReactNode;

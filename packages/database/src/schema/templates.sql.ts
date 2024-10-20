@@ -17,26 +17,41 @@ import { projects } from "./projects.sql";
 
 export const documentFormats = pgEnum("document_formats", ["PDF", "IMAGE"]);
 
-export const variables = pgTable("variables", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-  value: text("value").notNull(),
-  secret: boolean("secret").default(false),
-  createdAt: timestamp("created_at", {
-    mode: "date",
-    withTimezone: true,
+export const variables = pgTable(
+  "variables",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    name: text("name").notNull(),
+    description: text("description"),
+    value: text("value").notNull(),
+
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
+
+    secret: boolean("secret").default(false),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "date",
+      withTimezone: true,
+    }).$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    nameIndex: index("variable_name_index").on(t.name),
+    projectIndex: index("variable_project_idx").on(t.projectId),
+    uniqueProjectVariable: unique("unique_project_variable").on(
+      t.projectId,
+      t.name
+    ),
   })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", {
-    mode: "date",
-    withTimezone: true,
-  }).$onUpdate(() => new Date()),
-  isDeleted: boolean("is_deleted").notNull().default(false),
-});
+);
 
 export const documentTypes = pgTable(
   "document_types",
@@ -60,7 +75,6 @@ export const documentTypes = pgTable(
       mode: "date",
       withTimezone: true,
     }).$onUpdate(() => new Date()),
-    isDeleted: boolean("is_deleted").notNull().default(false),
   },
   (t) => ({
     uniqueProjectDocType: unique("unique_project_doc_type").on(
@@ -81,7 +95,6 @@ export const createDocumentTypeSchema = createInsertSchema(documentTypes).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-  isDeleted: true,
 });
 
 export const templates = pgTable(

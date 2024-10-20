@@ -172,7 +172,7 @@ export const handler = async (event: S3Event) => {
         await db
           .update(documents)
           .set({
-            preview_url: previewUrl,
+            previewUrl: previewUrl,
           })
           .where(eq(documents.jobId, refJobId));
 
