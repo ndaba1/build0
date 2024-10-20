@@ -21,7 +21,7 @@ export const GET = withDocument<Params<"/api/v1/files/preview/[...s3Key]">>(
     const { Body, ContentType, ContentLength } = await s3.send(command);
     const disposition =
       req.nextUrl.searchParams.get("disposition") || "attachment";
-    const filename = req.nextUrl.searchParams.get("filename") || "document.pdf";
+    const filename = req.nextUrl.searchParams.get("filename") || "preview.png";
 
     if (!Body) {
       return throwError("Document not found", 404);
@@ -29,7 +29,7 @@ export const GET = withDocument<Params<"/api/v1/files/preview/[...s3Key]">>(
 
     // Set headers
     const headers = {
-      "Content-Type": ContentType || "application/pdf",
+      "Content-Type": ContentType || "image/png",
       "Content-Length": ContentLength?.toString() || "0",
       "Content-Disposition": `${
         disposition === "inline" ? "inline" : "attachment"
