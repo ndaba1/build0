@@ -1,11 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    FileText,
-    FilesIcon,
-    FingerprintIcon,
-    PlugZapIcon,
-    SparklesIcon,
-    ZapIcon,
+  BicepsFlexedIcon,
+  DatabaseZapIcon,
+  FileText,
+  FilesIcon,
+  FingerprintIcon,
+  ImageIcon,
+  PlugZapIcon,
+  SparklesIcon,
+  ZapIcon,
 } from "lucide-react";
 
 const features = [
@@ -14,6 +17,12 @@ const features = [
     description:
       "Create on-demand PDFs in seconds. It's super easy, barely an inconvenience!",
     icon: <ZapIcon className="text-yellow-500" />,
+  },
+  {
+    title: "Secure file downloads",
+    description:
+      "The security of pre-signed urls, without the hassle of having to manage them",
+    icon: <FingerprintIcon className="text-red-500" />,
   },
   {
     title: "Easy-to-use Templates",
@@ -33,10 +42,22 @@ const features = [
     icon: <PlugZapIcon className="text-green-500" />,
   },
   {
-    title: "Secure file downloads",
+    title: "PDF Image Previews",
     description:
-      "The security of pre-signed urls, without the ugly, ultra-long urls.",
-    icon: <FingerprintIcon className="text-red-500" />,
+      "We generate image previews of your PDFs so you can see them before downloading.",
+    icon: <ImageIcon className="text-pink-500" />,
+  },
+  {
+    title: "Robust Validation",
+    description:
+      "Automatic zod validation for payloads passed to your templates.",
+    icon: <BicepsFlexedIcon className="text-orange-500" />,
+  },
+  {
+    title: "Self-hosting",
+    description:
+      "BuildZero is built to be self-hosted with 100% feature parity.",
+    icon: <DatabaseZapIcon className="text-teal-500" />,
   },
   {
     title: "And more...",
@@ -48,7 +69,7 @@ const features = [
 
 export function TheWhat() {
   return (
-    <section className="my-20 max-w-7xl mx-auto">
+    <section className="my-20 max-w-6xl mx-auto">
       <h3 className="font-cal text-center text-4xl font-medium">The what</h3>
       <p className="text-muted-foreground text-center mt-4 text-lg">
         Here&apos;s what BuildZero has to offer

@@ -32,7 +32,6 @@ export default async function Documents({
     .innerJoin(templates, eq(documents.templateId, templates.id))
     .innerJoin(projects, eq(documents.projectId, projects.id))
     .where(eq(projects.slug, params.slug))
-    .limit(12)
     .orderBy(desc(documents.createdAt));
 
   return (

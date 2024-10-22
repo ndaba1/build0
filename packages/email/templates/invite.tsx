@@ -15,6 +15,7 @@ import {
   Text,
   Tailwind,
 } from "@react-email/components";
+// prettier-ignore
 import * as React from "react";
 
 interface BuildZeroInviteUserEmailProps {
@@ -71,7 +72,7 @@ export const BuildZeroInviteUserEmail = ({
             <Section className="text-center mt-[32px] mb-[32px]">
               <Button
                 className="bg-[#000000] rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
-                href="https://app.build0.dev"
+                href="https://build0.dev/sign-in"
               >
                 Go to Dashboard
               </Button>

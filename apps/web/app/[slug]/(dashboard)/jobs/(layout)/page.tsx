@@ -29,7 +29,6 @@ export default async function Jobs({ params }: { params: { slug: string } }) {
     .innerJoin(templates, eq(jobs.templateId, templates.id))
     .innerJoin(projects, eq(jobs.projectId, projects.id))
     .where(and(eq(projects.slug, params.slug), isNull(jobs.refJobId)))
-    .limit(12)
     .orderBy(desc(jobs.startedAt));
 
   return (

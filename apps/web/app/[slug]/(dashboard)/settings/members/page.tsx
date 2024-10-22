@@ -1,9 +1,9 @@
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
@@ -27,8 +27,9 @@ export default async function MembersSettings({
       createdAt: projectUsers.createdAt,
     })
     .from(projectUsers)
-    .innerJoin(projects, eq(projects.slug, params.slug))
-    .innerJoin(users, eq(users.id, projectUsers.userId));
+    .innerJoin(projects, eq(projectUsers.projectId, projects.id))
+    .innerJoin(users, eq(users.id, projectUsers.userId))
+    .where(eq(projects.slug, params.slug));
 
   const activeMembers = members.filter((member) => member.status === "ACTIVE");
   const pendingMembers = members.filter(
