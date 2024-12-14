@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@react-email/render": "^1.0.1",
-    "@repo/database": "*",
-    "@repo/email": "*",
+    "@repo/database": "workspace:*",
+    "@repo/email": "workspace:*",
     "react": "^18"
   }
 }

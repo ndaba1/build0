@@ -50,8 +50,9 @@ export function HeaderCTA() {
             href={`/${userAttributes?.["custom:default_project"]}`}
             className={cn(
               buttonVariants({
-                className: "rounded-lg text-base",
+                className: "rounded-lg",
                 variant: "outline",
+                size: "sm"
               })
             )}
           >

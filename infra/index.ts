@@ -3,7 +3,7 @@ export const imageBucket = new sst.aws.Bucket("BuildZeroImageBucket");
 
 export const vpc = new sst.aws.Vpc("BuildZeroVpc", {
   bastion: true,
-  nat: "managed",
+  nat: "ec2",
 });
 
 export const database = new sst.aws.Postgres("BuildZeroDatabase", {

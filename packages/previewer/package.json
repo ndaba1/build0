@@ -12,7 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.670.0",
     "@aws-sdk/s3-request-presigner": "^3.670.0",
-    "@repo/database": "*",
+    "@repo/database": "workspace:*",
     "@sparticuz/chromium": "^129.0.0",
     "jose": "^5.9.4",
     "nanoid": "^5.0.7",
