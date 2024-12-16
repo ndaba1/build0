@@ -2,6 +2,7 @@
   "name": "build0",
   "private": true,
   "version": "1.0.0",
+  "packageManager": "pnpm@9.12.3",
   "description": "Open-source pdf generation tooling for focused teams",
   "author": "Victor Ndaba <mwangindaba@gmail.com>",
   "license": "MIT",
