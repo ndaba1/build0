@@ -1,0 +1,89 @@
+name: sst
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "The action to perform"
+        required: true
+      stage:
+        description: "The stage to deploy to"
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.stage }}
+
+permissions: write-all
+
+jobs:
+  sst:
+    # admin app needs more memory to build
+    runs-on: ubuntu-latest
+
+    # if the action is remove, fallback to staging since we'll have
+    # deleted the environment and don't want it to be created again
+    environment: ${{ github.event.inputs.action == 'deploy' && github.event.inputs.stage || 'dev' }}
+    env:
+      SST_ACTION: ${{ github.event.inputs.action }}
+      SST_STAGE: ${{ github.event.inputs.stage }}
+      NODE_OPTIONS: --max-old-space-size=4096
+      VARS_CONTEXT: ${{ toJson(vars) }}
+      PULUMI_EXPERIMENTAL: true
+      PULUMI_SKIP_CHECKPOINTS: true
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_DEFAULT_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_DEFAULT_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup cache for web app
+        uses: actions/cache@v4
+        with:
+          path: ./apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-web-${{ hashFiles('./pnpm-lock.yaml') }}-${{ hashFiles('apps/web/src/**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-web-${{ hashFiles('./pnpm-lock.yaml') }}-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Configure Credentials
+        uses: sst-actions/setup-aws@main
+        with:
+          aws_region: "us-east-2"
+          role_arn: ${{ secrets.AWS_ROLE_ARN }}
+
+      # https://stackoverflow.com/questions/75646046/passing-all-github-environment-variables-and-secrets-in-a-github-actions-workflo
+      - name: Set env vars from vars context JSON
+        run: |
+          # Pipe the JSON string into jq
+          echo "$VARS_CONTEXT" | 
+          # Convert JSON object into an array of key-value pairs
+          jq -r 'to_entries | 
+          # Map over each key-value pair
+          .[] | 
+          # Format each pair as "KEY=VALUE" and append it all to the environment file
+          "\(.key)=\(.value)"' >> $GITHUB_ENV
+
+      - name: Run SST command
+        run: |
+          npx sst $SST_ACTION --stage $SST_STAGE
+
+      - id: sst_outputs
+        name: Export sst outputs
+        run: echo "RESOURCES=$(cat .sst/outputs.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Update Deployment Environment
+        uses: sst-actions/update-env@main
+        with:
+          repository: ${{ github.repository }}
+          # make sure token has `variables` write scope
+          token: ${{ secrets.CATALYSST_TOKEN }}
+          outputs: ${{ steps.sst_outputs.outputs.RESOURCES }}
+          stage: ${{ github.event.inputs.stage }}
