@@ -1,15 +1,20 @@
 import { vpc, database, docBucket, imageBucket, redis } from "./shared";
 import { userPool, userPoolClient } from "./auth";
+import { customAlphabet } from "nanoid";
+
+// no uppercase to avoid CNAME errors
+const nano = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10);
 
 export const website = new sst.aws.Nextjs("BuildZeroWeb", {
   vpc,
   link: [database, docBucket, imageBucket, redis, userPool, userPoolClient],
   path: "apps/web",
   domain: {
-    name: "build0.dev",
+    name: $app.stage === "dev" ? "build0.dev" : `${nano()}.build0.dev`,
     dns: sst.cloudflare.dns(),
-    aliases: ["api.build0.dev", "files.build0.dev"],
-    redirects: ["www.build0.dev"],
+    aliases:
+      $app.stage === "dev" ? ["api.build0.dev", "files.build0.dev"] : undefined,
+    redirects: $app.stage === "dev" ? ["www.build0.dev"] : undefined,
   },
   environment: {
     NEXT_PUBLIC_AWS_REGION: "us-east-2",
