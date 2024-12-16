@@ -85,9 +85,9 @@ export default async function Templates({
                       </SmallBadge>
                     </div>
                   </div>
-                  <p className="text-muted-foreground mt-2">
+                  {/* <p className="text-muted-foreground mt-2">
                     {template.description}
-                  </p>
+                  </p> */}
                   <div className="grid grid-cols-2 gap-2 gap-y-4 mt-6">
                     {Object.entries(values).map(([key, value]) => (
                       <div key={key}>
