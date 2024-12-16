@@ -61,12 +61,16 @@ export default async function middleware(request: NextRequest) {
   const user = await getUser(request, response);
 
   // authenticated user trying to access auth routes
-  if (AUTH_ROUTES.has(path) && user) {
+  if (AUTH_ROUTES.has(path)) {
+    if (!user) {
+      return;
+    }
+
     console.log("Authenticated user trying to access auth routes");
     return NextResponse.redirect(new URL("/", request.url));
   }
   // accessing protected routes
-  else if (!PUBLIC_ROUTES.has(path)) {
+  else if (!PUBLIC_ROUTES.has(path) && !user) {
     console.log(
       `Accessing protected route ${path} with user: ${JSON.stringify(
         user,
@@ -79,12 +83,12 @@ export default async function middleware(request: NextRequest) {
     }
 
     return NextResponse.redirect(new URL(`/sign-in?next=${path}`, request.url));
-  } else if (user && user["custom:default_project"]) {
+  } else if (user && user["custom:default_project"] && path === "/") {
     console.log("Redirecting to default project");
     return NextResponse.redirect(
       new URL(`/${user["custom:default_project"]}`, request.url)
     );
-  } else if (user) {
+  } else if (user && !user["custom:is_onboarded"] && path !== "/onboarding") {
     console.log("Redirecting to onboarding");
     return NextResponse.redirect(new URL("/onboarding", request.url));
   }

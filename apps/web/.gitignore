@@ -38,3 +38,7 @@ next-env.d.ts
 # open-next
 .open-next
 certificates
+
+.contentlayer
+.env*
+!.env.example

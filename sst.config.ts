@@ -17,7 +17,9 @@ export default $config({
     const infra = await import("./infra");
 
     return {
-      url: infra.website.url,
+      urls: {
+        "build0-web": infra.website.url,
+      }
     };
   },
 });
