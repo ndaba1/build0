@@ -16,11 +16,9 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@pulumi/aws": "^6.55.0",
-    "@pulumi/pulumi": "^3.136.1",
-    "@pulumi/tls": "^5.0.8",
     "@types/lodash": "^4.17.10",
     "lodash": "^4.17.21",
+    "nanoid": "^5.0.7",
     "sst": "3.2.31"
   },
   "scripts": {
