@@ -32,6 +32,7 @@ jobs:
       PULUMI_SKIP_CHECKPOINTS: true
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_DEFAULT_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_DEFAULT_ACCOUNT_ID }}
+      DOCUMENT_TOKEN_SECRET: ${{ secrets.DOCUMENT_TOKEN_SECRET }}
     steps:
       - uses: actions/checkout@v4
 
