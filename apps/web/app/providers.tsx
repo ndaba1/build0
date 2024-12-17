@@ -6,7 +6,7 @@ import { authConfig } from "@/lib/auth";
 import { queryClient } from "@/lib/query-client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Amplify } from "aws-amplify";
-import { posthog } from "posthog-js";
+import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 
 Amplify.configure(authConfig, { ssr: true });
