@@ -14,7 +14,7 @@ export function Hero() {
 
       <section className="mx-auto max-w-[85rem] py-12 lg:pt-40 grid gap-10">
         <h2 className="text-7xl max-w-[60rem] text-center mx-auto font-cal">
-          Open source pdf generation for very lazy teams
+          Open source pdf generation for lazy teams
         </h2>
         <p className="text-2xl text-muted-foreground text-center max-w-2xl mx-auto">
           <span>BuildZero</span> is a modern, open-source, and easy-to-use PDF
