@@ -16,6 +16,11 @@ export const website = new sst.aws.Nextjs("BuildZeroWeb", {
       $app.stage === "dev" ? ["api.build0.dev", "files.build0.dev"] : undefined,
     redirects: $app.stage === "dev" ? ["www.build0.dev"] : undefined,
   },
+  transform: {
+    cdn: {
+      wait: false, // since we have pre-computed domains
+    },
+  },
   environment: {
     NEXT_PUBLIC_AWS_REGION: "us-east-2",
     NEXT_PUBLIC_USER_POOL_ID: userPool.id,

@@ -1,0 +1,6 @@
+workspace: build0
+defaultBranch: dev
+workflowId: sst.yml
+branchMappings: 
+  dev: dev
+  main: prod
