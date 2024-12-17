@@ -69,6 +69,7 @@ jobs:
         run: echo "RESOURCES=$(cat .sst/outputs.json)" >> "$GITHUB_OUTPUT"
 
       - name: Update Deployment Environment
+        if: ${{ github.event.inputs.action == 'deploy' }}
         uses: sst-actions/update-env@main
         with:
           repository: ${{ github.repository }}
