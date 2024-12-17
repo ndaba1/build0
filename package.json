@@ -23,7 +23,6 @@
   },
   "scripts": {
     "dev": "npm run web:dev",
-    "docs:dev": "cd apps/docs && mintlify dev",
     "web:dev": "cd apps/web && npm run dev"
   }
 }
