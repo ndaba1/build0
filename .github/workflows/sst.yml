@@ -17,10 +17,9 @@ permissions: write-all
 
 jobs:
   sst:
-    # admin app needs more memory to build
     runs-on: ubuntu-latest
 
-    # if the action is remove, fallback to staging since we'll have
+    # if the action is remove, fallback to dev since we'll have
     # deleted the environment and don't want it to be created again
     environment: ${{ github.event.inputs.action == 'deploy' && github.event.inputs.stage || 'dev' }}
     env:

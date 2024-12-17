@@ -37,6 +37,7 @@ export const website = new sst.aws.Nextjs("BuildZeroWeb", {
     // uncomment for self signup
     // ENABLE_SELF_SIGNUP: "true",
   },
+  warm: $app.stage === "dev" ? 3 : 0,
 });
 
 if ($app.stage === "dev") {
