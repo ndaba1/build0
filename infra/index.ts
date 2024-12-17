@@ -25,6 +25,8 @@ export const website = new sst.aws.Nextjs("BuildZeroWeb", {
     NEXT_PUBLIC_AWS_REGION: "us-east-2",
     NEXT_PUBLIC_USER_POOL_ID: userPool.id,
     NEXT_PUBLIC_USER_POOL_CLIENT_ID: userPoolClient.id,
+    NEXT_PUBLIC_POSTHOG_KEY: new sst.Secret("PostHogKey").value,
+    NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com",
 
     // file server url
     FILE_SERVER_URL:

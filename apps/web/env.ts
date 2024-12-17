@@ -6,6 +6,7 @@ export const env = createEnv({
     NEXT_PUBLIC_AWS_REGION: z.string().min(1),
     NEXT_PUBLIC_USER_POOL_ID: z.string().min(1),
     NEXT_PUBLIC_USER_POOL_CLIENT_ID: z.string().min(1),
+    NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1).startsWith("phc_"),
   },
   server: {
     FILE_SERVER_URL: z.string().min(1),
@@ -18,6 +19,7 @@ export const env = createEnv({
     NEXT_PUBLIC_USER_POOL_ID: process.env.NEXT_PUBLIC_USER_POOL_ID,
     NEXT_PUBLIC_USER_POOL_CLIENT_ID:
       process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID,
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
 
     FILE_SERVER_URL: process.env.FILE_SERVER_URL,
     DOCUMENT_TOKEN_SECRET: process.env.DOCUMENT_TOKEN_SECRET,
