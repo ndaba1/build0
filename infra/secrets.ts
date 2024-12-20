@@ -1,9 +1,7 @@
-export const contentfulSpaceId = secret("ContentfulSpaceId", { refId: "" });
-export const contentfulAccessToken = secret("ContentfulAccessToken", {
-  refId: "",
-});
+export const contentfulSpaceId = secret("ContentfulSpaceId");
+export const contentfulAccessToken = secret("ContentfulAccessToken");
 
-function secret(id: string, { refId }: { refId: string }) {
+function secret(id: string) {
   if ($app.stage === "dev") {
     return new aws.ssm.Parameter(`SM_${id}`, {
       type: "String",
@@ -13,5 +11,5 @@ function secret(id: string, { refId }: { refId: string }) {
   }
 
   // reference existing secrets from dev stage
-  return aws.ssm.Parameter.get(id, refId);
+  return aws.ssm.Parameter.get(id, `/build0/secrets/dev/${id}`);
 }
