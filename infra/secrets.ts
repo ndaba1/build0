@@ -1,3 +1,4 @@
+export const posthogKey = secret("PostHogKey");
 export const contentfulSpaceId = secret("ContentfulSpaceId");
 export const contentfulAccessToken = secret("ContentfulAccessToken");
 
