@@ -5,7 +5,7 @@ export const contentfulAccessToken = secret("ContentfulAccessToken", {
 
 function secret(id: string, { refId }: { refId: string }) {
   if ($app.stage === "dev") {
-    return new aws.ssm.Parameter(`SSM${id}`, {
+    return new aws.ssm.Parameter(`SM_${id}`, {
       type: "String",
       value: new sst.Secret(id).value,
     });
