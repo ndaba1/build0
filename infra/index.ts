@@ -1,7 +1,7 @@
 import { vpc, database, docBucket, imageBucket, redis } from "./shared";
 import { userPool, userPoolClient } from "./auth";
 import { customAlphabet } from "nanoid";
-import { contentfulAccessToken, contentfulSpaceId } from "./secrets";
+import { contentfulAccessToken, contentfulSpaceId, posthogKey } from "./secrets";
 
 // no uppercase to avoid CNAME errors
 const nano = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10);
@@ -26,7 +26,7 @@ export const website = new sst.aws.Nextjs("BuildZeroWeb", {
     NEXT_PUBLIC_AWS_REGION: "us-east-2",
     NEXT_PUBLIC_USER_POOL_ID: userPool.id,
     NEXT_PUBLIC_USER_POOL_CLIENT_ID: userPoolClient.id,
-    NEXT_PUBLIC_POSTHOG_KEY: new sst.Secret("PostHogKey").value,
+    NEXT_PUBLIC_POSTHOG_KEY: posthogKey.value,
     NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com",
 
     // file server url
