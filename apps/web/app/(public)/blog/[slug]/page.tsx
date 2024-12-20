@@ -1,11 +1,21 @@
-import { getEntryBySlug } from "@/lib/cms";
+import { getBlogEntries, getEntryBySlug } from "@/lib/cms";
 import React from "react";
 import { Header } from "../../header";
 import { format } from "date-fns";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
-import { BLOCKS, INLINES, MARKS } from "@contentful/rich-text-types";
+import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
+
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const entries = await getBlogEntries();
+
+  return entries.map((entry) => ({
+    slug: entry.slug,
+  }));
+}
 
 export default async function BlogEntry({
   params,

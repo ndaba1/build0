@@ -6,6 +6,8 @@ import { getBlogEntries } from "@/lib/cms";
 import { format } from "date-fns";
 import Link from "next/link";
 
+export const revalidate = 60;
+
 export default async function BlogListing() {
   const entries = await getBlogEntries();
 
