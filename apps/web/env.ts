@@ -12,6 +12,8 @@ export const env = createEnv({
     FILE_SERVER_URL: z.string().min(1),
     DOCUMENT_TOKEN_SECRET: z.string().min(1),
     ENABLE_SELF_SIGNUP: z.coerce.boolean().optional(),
+    CONTENTFUL_SPACE_ID: z.string().min(1),
+    CONTENTFUL_ACCESS_TOKEN: z.string().min(1),
   },
   // If you're using Next.js < 13.4.4, you'll need to specify the runtimeEnv manually
   runtimeEnv: {
@@ -24,6 +26,8 @@ export const env = createEnv({
     FILE_SERVER_URL: process.env.FILE_SERVER_URL,
     DOCUMENT_TOKEN_SECRET: process.env.DOCUMENT_TOKEN_SECRET,
     ENABLE_SELF_SIGNUP: process.env.ENABLE_SELF_SIGNUP || undefined,
+    CONTENTFUL_SPACE_ID: process.env.CONTENTFUL_SPACE_ID,
+    CONTENTFUL_ACCESS_TOKEN: process.env.CONTENTFUL_ACCESS_TOKEN,
   },
   // For Next.js >= 13.4.4, you only need to destructure client variables:
   // experimental__runtimeEnv: {

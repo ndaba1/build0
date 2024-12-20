@@ -17,7 +17,7 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export function Header() {
+export function Header({ showNav = true }: { showNav?: boolean }) {
   const links = [
     {
       label: "Docs",
@@ -33,8 +33,8 @@ export function Header() {
     },
 
     {
-      label: "For Teams",
-      href: "/teams",
+      label: "Changelog",
+      href: "/changelog",
     },
     {
       label: "Github",
@@ -52,31 +52,40 @@ export function Header() {
 
   return (
     <header className="w-full h-20 p-5 grid grid-cols-12 gap-2 lg:px-0 mx-auto max-w-7xl">
-      <div className="inline-flex col-span-3 justify-start">
+      <Link href="/" className="inline-flex col-span-3 justify-start">
         <Image src={logo} alt="Logo" width={48} height={48} />
-      </div>
+      </Link>
 
-      <div className="justify-center items-center col-span-6">
-        <nav className="mx-auto p-2 shadow-sm px-6 border bg-background rounded-3xl w-fit h-fit">
-          <ul className="flex gap-8 items-center">
-            {links.map((link, idx) =>
-              link.node ? (
-                <link.node key={idx} />
-              ) : (
-                <Link
-                  key={link.href}
-                  className="text-foreground/50 transition-all hover:text-foreground font-medium"
-                  href={link.href}
-                >
-                  {link.label}
-                </Link>
-              )
-            )}
-          </ul>
-        </nav>
-      </div>
+      {showNav ? (
+        <div className="justify-center items-center col-span-6">
+          <nav className="mx-auto p-2 shadow-sm px-6 border bg-background rounded-3xl w-fit h-fit">
+            <ul className="flex gap-8 items-center">
+              {links.map((link, idx) =>
+                link.node ? (
+                  <link.node key={idx} />
+                ) : (
+                  <Link
+                    key={link.href}
+                    className="text-foreground/50 transition-all hover:text-foreground font-medium"
+                    href={link.href}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              )}
+            </ul>
+          </nav>
+        </div>
+      ) : null}
 
-      <HeaderCTA />
+      {showNav ? (
+        <HeaderCTA />
+      ) : (
+        <>
+          <div className="hidden sm:flex col-span-6" />
+          <HeaderCTA />
+        </>
+      )}
     </header>
   );
 }

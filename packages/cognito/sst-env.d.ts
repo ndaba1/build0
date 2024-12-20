@@ -32,22 +32,29 @@ declare module "sst" {
     }
     "BuildZeroRedisCache": {
       "host": string
-      "password": string
+      "password": any
       "port": number
       "type": "sst.aws.Redis"
       "username": string
     }
     "BuildZeroVpc": {
-      "bastion": string
       "type": "sst.aws.Vpc"
     }
     "BuildZeroWeb": {
       "type": "sst.aws.Nextjs"
       "url": string
     }
-    "PostgresMigrator": {
-      "name": string
-      "type": "sst.aws.Function"
+    "ContentfulAccessToken": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "ContentfulSpaceId": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PostHogKey": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
   }
 }

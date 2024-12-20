@@ -13,11 +13,18 @@ export const config = {
      * 5. /_vercel (Vercel internals)
      * 6. Static files (e.g. /favicon.ico, /sitemap.xml, /robots.txt, etc.)
      */
-    "/((?!api/|_next/|_proxy/|_static|_vercel|[\\w-]+\\.\\w+).*)",
+    "/((?!api/|_next/|blog/|_proxy/|_static|_vercel|[\\w-]+\\.\\w+).*)",
   ],
 };
 
-const PUBLIC_ROUTES = new Set(["/", "/home", "/teams", "/pricing"]);
+const PUBLIC_ROUTES = new Set([
+  "/",
+  "/docs",
+  "/home",
+  "/changelog",
+  "/pricing",
+  "/blog",
+]);
 
 const AUTH_ROUTES = new Set([
   "/sign-in",
@@ -103,7 +110,6 @@ async function getUser(request: NextRequest, response: NextResponse) {
           const attributes = await fetchUserAttributes(contextSpec);
           return attributes;
         } catch (error) {
-          console.log(error);
           return null;
         }
       },
@@ -111,7 +117,6 @@ async function getUser(request: NextRequest, response: NextResponse) {
 
     return user;
   } catch (error) {
-    console.log(error);
     return null;
   }
 }
