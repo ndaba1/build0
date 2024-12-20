@@ -8,6 +8,7 @@ function secret(id: string, { refId }: { refId: string }) {
     return new aws.ssm.Parameter(`SM_${id}`, {
       type: "String",
       value: new sst.Secret(id).value,
+      name: `/build0/secrets/${$app.stage}/${id}`,
     });
   }
 
