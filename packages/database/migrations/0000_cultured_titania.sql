@@ -1,4 +1,10 @@
 DO $$ BEGIN
+ CREATE TYPE "public"."project_user_status" AS ENUM('PENDING', 'ACTIVE', 'DISABLED');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  CREATE TYPE "public"."user_roles" AS ENUM('MEMBER', 'ADMIN');
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -12,28 +18,33 @@ END $$;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "documents" (
 	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
 	"job_id" text NOT NULL,
 	"template_id" text NOT NULL,
+	"external_id" text,
+	"project_id" text NOT NULL,
 	"template_version" integer NOT NULL,
 	"template_variables" jsonb NOT NULL,
 	"s3_key" text NOT NULL,
 	"url" text NOT NULL,
 	"preview_url" text,
-	"created_at" timestamp DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
-	"is_deleted" boolean DEFAULT false NOT NULL
+	CONSTRAINT "unique_project_external_id" UNIQUE("job_id","external_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "jobs" (
 	"id" text PRIMARY KEY NOT NULL,
 	"template_id" text NOT NULL,
-	"template_version" integer NOT NULL,
+	"project_id" text NOT NULL,
 	"document_id" text,
+	"ref_job_id" text,
+	"template_version" integer NOT NULL,
 	"target_format" "document_formats" DEFAULT 'PDF',
 	"template_variables" jsonb NOT NULL,
 	"status" text DEFAULT 'PENDING' NOT NULL,
-	"started_at" timestamp DEFAULT now() NOT NULL,
-	"ended_at" timestamp,
+	"started_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"ended_at" timestamp with time zone,
 	"retries" integer DEFAULT 0 NOT NULL,
 	"error_message" text
 );
@@ -42,7 +53,8 @@ CREATE TABLE IF NOT EXISTS "project_users" (
 	"id" text PRIMARY KEY NOT NULL,
 	"project_id" text,
 	"user_id" text,
-	"user_role" "user_roles" DEFAULT 'MEMBER',
+	"user_role" "user_roles" DEFAULT 'MEMBER' NOT NULL,
+	"status" "project_user_status" DEFAULT 'ACTIVE' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone
 );
@@ -63,29 +75,31 @@ CREATE TABLE IF NOT EXISTS "document_types" (
 	"name" text NOT NULL,
 	"description" text,
 	"s3_path_prefix" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
+	"project_id" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
-	"is_deleted" boolean DEFAULT false NOT NULL,
-	CONSTRAINT "document_types_name_unique" UNIQUE("name")
+	CONSTRAINT "unique_project_doc_type" UNIQUE("project_id","name")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "templates" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
-	"is_active" boolean DEFAULT false NOT NULL,
+	"is_active" boolean DEFAULT true NOT NULL,
 	"version" integer DEFAULT 1 NOT NULL,
 	"payload_schema" jsonb NOT NULL,
+	"preview_payload" jsonb,
 	"description" text,
 	"document_format" "document_formats" DEFAULT 'PDF',
 	"document_type_id" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
+	"project_id" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	"function_definition" text NOT NULL,
 	"raw_function_definition" text NOT NULL,
 	"s3_path_prefix" text,
 	"last_generated_at" timestamp with time zone,
 	"generation_count" integer DEFAULT 0 NOT NULL,
-	CONSTRAINT "templates_name_unique" UNIQUE("name")
+	CONSTRAINT "unique_project_template" UNIQUE("project_id","name")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "variables" (
@@ -93,20 +107,26 @@ CREATE TABLE IF NOT EXISTS "variables" (
 	"name" text NOT NULL,
 	"description" text,
 	"value" text NOT NULL,
+	"project_id" text NOT NULL,
 	"secret" boolean DEFAULT false,
-	"created_at" timestamp DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
-	"is_deleted" boolean DEFAULT false NOT NULL,
-	CONSTRAINT "variables_name_unique" UNIQUE("name")
+	CONSTRAINT "unique_project_variable" UNIQUE("project_id","name")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tokens" (
 	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
 	"hashed_key" text NOT NULL,
 	"partial_key" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"expires_at" timestamp NOT NULL,
-	"is_revoked" boolean DEFAULT false NOT NULL
+	"is_revoked" boolean DEFAULT false NOT NULL,
+	"user_id" text NOT NULL,
+	"project_id" text NOT NULL,
+	"scopes" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"expires_at" timestamp with time zone,
+	"last_used_at" timestamp with time zone,
+	CONSTRAINT "tokens_hashed_key_unique" UNIQUE("hashed_key")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (
@@ -134,7 +154,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "documents" ADD CONSTRAINT "documents_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "jobs" ADD CONSTRAINT "jobs_template_id_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "public"."templates"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "jobs" ADD CONSTRAINT "jobs_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -152,19 +184,63 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
+ ALTER TABLE "document_types" ADD CONSTRAINT "document_types_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
  ALTER TABLE "templates" ADD CONSTRAINT "templates_document_type_id_document_types_id_fk" FOREIGN KEY ("document_type_id") REFERENCES "public"."document_types"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "templates" ADD CONSTRAINT "templates_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "variables" ADD CONSTRAINT "variables_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "tokens" ADD CONSTRAINT "tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "tokens" ADD CONSTRAINT "tokens_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "job_id_idx" ON "documents" USING btree ("job_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "s3_key_idx" ON "documents" USING btree ("s3_key");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "document_key_idx" ON "documents" USING btree ("s3_key");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "doc_template_id_idx" ON "documents" USING btree ("template_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ref_job_id_idx" ON "jobs" USING btree ("ref_job_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "project_id_idx" ON "jobs" USING btree ("project_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "document_id_idx" ON "jobs" USING btree ("document_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "job_template_id_idx" ON "jobs" USING btree ("template_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "project_user_status_idx" ON "project_users" USING btree ("status");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "project_user_idx" ON "project_users" USING btree ("project_id","user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "slug_idx" ON "projects" USING btree ("slug");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "document_type_name_index" ON "document_types" USING btree ("name");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "document_type_project_idx" ON "document_types" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "name_index" ON "templates" USING btree ("name");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "template_project_idx" ON "templates" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "template_doc_type_idx" ON "templates" USING btree ("document_type_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "variable_name_index" ON "variables" USING btree ("name");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "variable_project_idx" ON "variables" USING btree ("project_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "user_id_index" ON "tokens" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "project_id_index" ON "tokens" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "hashed_key_index" ON "tokens" USING btree ("hashed_key");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "expires_at_index" ON "tokens" USING btree ("expires_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "sub_idx" ON "users" USING btree ("sub");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "email_idx" ON "users" USING btree ("email");
+CREATE INDEX IF NOT EXISTS "email_idx" ON "users" USING btree ("email");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "is_machine_idx" ON "users" USING btree ("is_machine");
