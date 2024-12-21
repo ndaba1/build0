@@ -37,6 +37,24 @@ export const AuthenticatorProvider = ({
 
   useEffect(() => {
     async function loadUser() {
+      const cookies = document.cookie.split(";");
+
+      // check for duplicated cognito cookies
+      const cognitoCookies = cookies.filter((cookie) => {
+        const name = cookie.split("=")[0].trim();
+
+        return ["accessToken", "idToken", "refreshToken"].some((token) =>
+          name.endsWith(token)
+        );
+      });
+
+      if (cognitoCookies.length > 3) {
+        // remove all cognito cookies
+        await signOut();
+
+        window.location.reload();
+      }
+
       try {
         const [session, attributes] = await Promise.all([
           fetchAuthSession(),
