@@ -9,11 +9,11 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
 
-  revalidatePath("/blog", "page");
+  revalidatePath("/blog");
   revalidatePath("/(public)/blog/[slug]", "page");
 
   // open-next specific
-  await invalidateCloudFrontPaths(["/blog/*"]);
+  await invalidateCloudFrontPaths(["/blog*"]);
 
   return NextResponse.json({ success: true });
 };
