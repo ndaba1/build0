@@ -52,32 +52,31 @@ async function handler(event) {
     event.request.headers["x-open-next-longitude"] = event.request.headers["cloudfront-viewer-longitude"];
   }
 
-  if (headers.cookie) {
-        var cookies = headers.cookie[0].value;
+  if (event.request.headers.cookie) {
+    var cookiesHeader = event.request.headers.cookie[0].value;
 
-        // Parse cookies into an array
-        var cookieArray = cookies.split(';').map(cookie => cookie.trim());
+    // Split cookies into individual items
+    var cookieArray = cookiesHeader.split(";").map((cookie) => cookie.trim());
 
-        // Object to store the latest value for each unique cookie
-        var uniqueCookies = {};
+    // Object to store the latest occurrence of each cookie key
+    var uniqueCookies = {};
 
-        // Iterate over cookies to find Cognito duplicates
-        for (var i = 0; i < cookieArray.length; i++) {
-            var [key, value] = cookieArray[i].split('=');
-            if (key && value) {
-                // Always keep the last occurrence of a cookie
-                uniqueCookies[key] = value;
-            }
+    // Iterate over the cookies to capture the latest value for each key
+    for (var i = cookieArray.length - 1; i >= 0; i--) { // Iterate backward to keep the latest
+        var [key, value] = cookieArray[i].split("=");
+        if (key && value && !uniqueCookies[key]) {
+            uniqueCookies[key] = value;
         }
-
-        // Reconstruct the Cookie header
-        var deduplicatedCookies = Object.entries(uniqueCookies)
-            .map(([key, value]) => key + '=' + value)
-            .join('; ');
-
-        // Update the Cookie header
-        headers.cookie[0].value = deduplicatedCookies;
     }
+
+    // Reconstruct the Cookie header with deduplicated cookies
+    var deduplicatedCookies = Object.entries(uniqueCookies)
+        .map(([key, value]) => key + "=" + value)
+        .join("; ");
+
+    // Update the Cookie header in the request
+    event.request.headers.cookie[0].value = deduplicatedCookies;
+}
       
     
     return event.request;
