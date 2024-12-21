@@ -2,7 +2,7 @@ import { vpc, database } from "./shared";
 
 export const userPool =
   $app.stage === "dev"
-    ? new sst.aws.CognitoUserPool("BuildZeroAuth", {
+    ? new sst.aws.CognitoUserPool("BuildZeroAuthn", {
         usernames: ["email"],
         triggers: {
           customMessage: "packages/cognito/src/custom-message/index.handler",
@@ -50,6 +50,6 @@ export const userPool =
           },
         },
       })
-    : sst.aws.CognitoUserPool.get("BuildZeroAuth", "us-east-2_Op3stHCiZ");
+    : sst.aws.CognitoUserPool.get("BuildZeroAuthn", "us-east-2_Op3stHCiZ");
 
 export const userPoolClient = userPool.addClient("BuildZeroPoolWebClient");
