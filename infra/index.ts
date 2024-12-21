@@ -12,7 +12,7 @@ import {
 // no uppercase to avoid CNAME errors
 const nano = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10);
 
-export const website = new sst.aws.Nextjs("BuildZeroWeb", {
+export const website = new sst.aws.Nextjs("BuildZeroWebApp", {
   vpc,
   link: [database, docBucket, imageBucket, redis, userPool, userPoolClient],
   path: "apps/web",
