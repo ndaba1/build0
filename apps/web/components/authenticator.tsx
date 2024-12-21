@@ -9,6 +9,7 @@ import { Hub } from "aws-amplify/utils";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Loader } from "./loader";
+import jsCookie from "js-cookie";
 
 type AuthenticatorContextType = {
   idToken?: string | null;
@@ -48,9 +49,15 @@ export const AuthenticatorProvider = ({
         );
       });
 
+      // remove cognito cookies
       if (cognitoCookies.length > 3) {
-        // remove all cognito cookies
-        await signOut();
+        cookies.forEach((cookie) => {
+          const name = cookie.split("=")[0].trim();
+
+          if (name.startsWith("CognitoIdentityServiceProvider")) {
+            jsCookie.remove(name);
+          }
+        });
 
         window.location.reload();
       }
