@@ -1,6 +1,12 @@
 export const posthogKey = secret("PostHogKey");
 export const contentfulSpaceId = secret("ContentfulSpaceId");
 export const contentfulAccessToken = secret("ContentfulAccessToken");
+export const revalidateSecret = secret("RevalidateSecret");
+
+export const cloudfrontDistributionId = new sst.Secret(
+  "CloudfrontDistributionId",
+  "null" // set to 'null' to disable invalidation
+);
 
 function secret(id: string) {
   if ($app.stage === "dev") {

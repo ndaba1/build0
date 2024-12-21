@@ -7,8 +7,6 @@ import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 
-export const revalidate = 60;
-
 export async function generateStaticParams() {
   const entries = await getBlogEntries();
 
