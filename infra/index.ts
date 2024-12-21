@@ -8,9 +8,18 @@ import {
   posthogKey,
   revalidateSecret,
 } from "./secrets";
+import { cloudfrontFunctionCode } from "./utils";
 
 // no uppercase to avoid CNAME errors
 const nano = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10);
+
+const cloudfrontFn = new aws.cloudfront.Function(
+  "BuildZeroCloudfrontServerFn",
+  {
+    code: cloudfrontFunctionCode,
+    runtime: "cloudfront-js-2.0",
+  }
+);
 
 export const website = new sst.aws.Nextjs("BuildZeroWebApp", {
   vpc,
@@ -26,6 +35,33 @@ export const website = new sst.aws.Nextjs("BuildZeroWebApp", {
   transform: {
     cdn: {
       wait: false, // since we have pre-computed domains
+      transform: {
+        distribution(args, opts, name) {
+          args.defaultCacheBehavior = {
+            ...args.defaultCacheBehavior,
+            functionAssociations: [
+              {
+                eventType: "viewer-request",
+                functionArn: cloudfrontFn.arn,
+              },
+            ],
+          };
+
+          const behaviors =
+            args.orderedCacheBehaviors as unknown as aws.types.input.cloudfront.DistributionOrderedCacheBehavior[];
+          args.orderedCacheBehaviors = behaviors.map((behavior) => {
+            return {
+              ...behavior,
+              functionAssociations: [
+                {
+                  eventType: "viewer-request",
+                  functionArn: cloudfrontFn.arn,
+                },
+              ],
+            };
+          });
+        },
+      },
     },
   },
   environment: {
