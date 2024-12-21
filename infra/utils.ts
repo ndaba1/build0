@@ -50,34 +50,7 @@ async function handler(event) {
   }
   if(event.request.headers["cloudfront-viewer-longitude"]) {
     event.request.headers["x-open-next-longitude"] = event.request.headers["cloudfront-viewer-longitude"];
-  }
-
-  if (event.request.headers.cookie) {
-    var cookiesHeader = event.request.headers.cookie[0].value;
-
-    // Split cookies into individual items
-    var cookieArray = cookiesHeader.split(";").map((cookie) => cookie.trim());
-
-    // Object to store the latest occurrence of each cookie key
-    var uniqueCookies = {};
-
-    // Iterate over the cookies to capture the latest value for each key
-    for (var i = cookieArray.length - 1; i >= 0; i--) { // Iterate backward to keep the latest
-        var [key, value] = cookieArray[i].split("=");
-        if (key && value && !uniqueCookies[key]) {
-            uniqueCookies[key] = value;
-        }
-    }
-
-    // Reconstruct the Cookie header with deduplicated cookies
-    var deduplicatedCookies = Object.entries(uniqueCookies)
-        .map(([key, value]) => key + "=" + value)
-        .join("; ");
-
-    // Update the Cookie header in the request
-    event.request.headers.cookie[0].value = deduplicatedCookies;
-}
-      
+  }      
     
     return event.request;
 }`;
