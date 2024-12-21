@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^1.0.5",
     "@aws-amplify/adapter-nextjs": "^1.2.12",
     "@aws-sdk/client-cloudfront": "^3.716.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.675.0",
@@ -40,6 +41,7 @@
     "@t3-oss/env-nextjs": "^0.11.1",
     "@tanstack/react-query": "^5.59.13",
     "@types/pdfmake": "^0.2.9",
+    "ai": "^4.0.21",
     "aws-amplify": "^6.4.3",
     "axios": "^1.7.7",
     "class-variance-authority": "^0.7.0",
