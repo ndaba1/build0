@@ -1,6 +1,17 @@
 import { fetchUserAttributes } from "aws-amplify/auth/server";
 import { NextRequest, NextResponse } from "next/server";
-import { runWithAmplifyServerContext } from "./lib/amplify";
+import { createServerRunner } from "@aws-amplify/adapter-nextjs";
+
+const { runWithAmplifyServerContext } = createServerRunner({
+  config: {
+    Auth: {
+      Cognito: {
+        userPoolId: "us-east-1_QoFL3zQzp",
+        userPoolClientId: "2d8pt8bd1u1a5koguueqelvkcb",
+      },
+    },
+  },
+});
 
 export const config = {
   matcher: [
