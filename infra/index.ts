@@ -29,7 +29,7 @@ export const website = new sst.aws.Nextjs("BuildZeroWeb", {
     },
   },
   environment: {
-    NEXT_PUBLIC_AWS_REGION: "us-east-2",
+    NEXT_PUBLIC_AWS_REGION: "us-east-1",
     NEXT_PUBLIC_USER_POOL_ID: userPool.id,
     NEXT_PUBLIC_USER_POOL_CLIENT_ID: userPoolClient.id,
     NEXT_PUBLIC_POSTHOG_KEY: posthogKey.value,
@@ -54,6 +54,10 @@ export const website = new sst.aws.Nextjs("BuildZeroWeb", {
   permissions: [
     {
       actions: ["cloudfront:CreateInvalidation"],
+      resources: ["*"],
+    },
+    {
+      actions: ["bedrock:*"],
       resources: ["*"],
     },
   ],

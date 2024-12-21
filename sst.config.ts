@@ -6,11 +6,6 @@ export default $config({
       name: "build0",
       removal: input?.stage === "production" ? "retain" : "remove",
       home: "aws",
-      providers: {
-        aws: {
-          region: "us-east-2",
-        },
-      },
     };
   },
   async run() {
