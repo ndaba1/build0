@@ -1,7 +1,13 @@
 import { vpc, database, docBucket, imageBucket, redis } from "./shared";
 import { userPool, userPoolClient } from "./auth";
 import { customAlphabet } from "nanoid";
-import { cloudfrontDistributionId, contentfulAccessToken, contentfulSpaceId, posthogKey, revalidateSecret } from "./secrets";
+import {
+  cloudfrontDistributionId,
+  contentfulAccessToken,
+  contentfulSpaceId,
+  posthogKey,
+  revalidateSecret,
+} from "./secrets";
 
 // no uppercase to avoid CNAME errors
 const nano = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10);
@@ -45,6 +51,12 @@ export const website = new sst.aws.Nextjs("BuildZeroWeb", {
     // ENABLE_SELF_SIGNUP: "true",
   },
   warm: $app.stage === "dev" ? 3 : 0,
+  permissions: [
+    {
+      actions: ["cloudfront:CreateInvalidation"],
+      resources: ["*"],
+    },
+  ],
 });
 
 if ($app.stage === "dev") {
