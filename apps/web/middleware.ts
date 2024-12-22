@@ -1,17 +1,6 @@
 import { fetchUserAttributes } from "aws-amplify/auth/server";
 import { NextRequest, NextResponse } from "next/server";
-import { createServerRunner } from "@aws-amplify/adapter-nextjs";
-
-const { runWithAmplifyServerContext } = createServerRunner({
-  config: {
-    Auth: {
-      Cognito: {
-        userPoolId: "us-east-1_QoFL3zQzp",
-        userPoolClientId: "2d8pt8bd1u1a5koguueqelvkcb",
-      },
-    },
-  },
-});
+import { runWithAmplifyServerContext } from "./lib/amplify";
 
 export const config = {
   matcher: [
@@ -75,7 +64,7 @@ export default async function middleware(request: NextRequest) {
     );
   }
 
-  const response = new NextResponse();
+  const response = NextResponse.next();
   const user = await getUser(request, response);
 
   // authenticated user trying to access auth routes

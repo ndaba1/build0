@@ -9,12 +9,6 @@ const config = {
       incrementalCache: "s3-lite",
     },
   },
-  middleware: {
-    external: true,
-  },
-  dangerous: {
-    enableCacheInterception: true,
-  },
 } satisfies OpenNextConfig;
 
 export default config;

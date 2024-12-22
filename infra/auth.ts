@@ -50,6 +50,6 @@ export const userPool =
           },
         },
       })
-    : sst.aws.CognitoUserPool.get("BuildZeroAuthn", "us-east-2_Op3stHCiZ");
+    : sst.aws.CognitoUserPool.get("BuildZeroAuthn", "us-east-1_QoFL3zQzp");
 
 export const userPoolClient = userPool.addClient("BuildZeroPoolWebClient");

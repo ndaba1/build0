@@ -7,7 +7,7 @@ export const vpc =
         bastion: true,
         nat: "ec2",
       })
-    : sst.aws.Vpc.get("BuildZeroVpc", "vpc-06cd9f4bdde3d1c6e");
+    : sst.aws.Vpc.get("BuildZeroVpc", "vpc-08aad8b1cdd74a223");
 
 export const database =
   $app.stage === "dev"
