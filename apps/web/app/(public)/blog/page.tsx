@@ -6,6 +6,8 @@ import { getBlogEntries } from "@/lib/cms";
 import { format } from "date-fns";
 import Link from "next/link";
 
+export const revalidate = 30;
+
 export default async function BlogListing() {
   const entries = await getBlogEntries();
 
@@ -15,7 +17,7 @@ export default async function BlogListing() {
 
       <section className="py-16 space-y-6">
         <h1 className="text-4xl font-cal">
-          A few articles we think you might like
+          A few articles we think you might like (time-based ISR)
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl">
           Just a small team, trying to make the world a better place. One
