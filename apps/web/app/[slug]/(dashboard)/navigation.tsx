@@ -2,6 +2,7 @@
 
 import { useProject } from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
+import { SparklesIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -28,6 +29,24 @@ export function DashboardNavigation() {
     {
       name: "Settings",
       href: "/settings",
+    },
+    {
+      name: (
+        <div className="inline-flex items-center gap-2">
+          <span
+            className={cn(
+              `underline-offset-[24px] decoration-[2px] cursor-pointer transition-colors`,
+              isActive(`/${slug}/prompts`)
+                ? "underline font-medium text-foreground decoration-primary"
+                : "hover:underline decoration-muted-foreground/40 hover:text-foreground"
+            )}
+          >
+            Prompts
+          </span>
+          <SparklesIcon className="w-4 h-4 text-yellow-500" />
+        </div>
+      ),
+      href: "/prompts",
     },
   ];
 
