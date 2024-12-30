@@ -101,11 +101,11 @@ type AccessTokenPayload = {
 async function getJwks() {
   let jwks: JWK[] = [];
 
-  const cachedJwks = (await redis.get(JWKS_CACHE_KEY)) as string | null;
+  const cachedJwks = (await redis.get(JWKS_CACHE_KEY)) as JWK[] | null;
   console.log("cachedJwks", typeof cachedJwks, cachedJwks);
   if (cachedJwks) {
     console.log("JWKS found in cache");
-    jwks = JSON.parse(cachedJwks);
+    jwks = cachedJwks;
   } else {
     console.log("JWKS not found in cache");
     const { data } = await axios.get(jwksUri);
