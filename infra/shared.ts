@@ -17,7 +17,7 @@ export const vpc =
 
 export const database =
   $app.stage === "dev"
-    ? new sst.aws.Postgres("BuildZeroDatabase", {
+    ? new sst.aws.Postgres("BuildZeroDb", {
         vpc,
         proxy: true,
         transform: {
@@ -25,13 +25,9 @@ export const database =
             // TODO: remove me after vercel testing demo
             publiclyAccessible: true,
           },
-          subnetGroup(args, opts, name) {
-            args.name = "build0-public-subnet-group";
-            args.description = "Public subnet group";
-            args.subnetIds = vpc.publicSubnets;
-            
-            opts.import = "build0-public-subnet-group";
-          },
+          subnetGroup: {
+            subnetIds: vpc.publicSubnets
+          }
         },
       })
     : sst.aws.Postgres.get("BuildZeroDatabase", {
