@@ -26,6 +26,10 @@ export const database =
             publiclyAccessible: true,
           },
           subnetGroup(args, opts, name) {
+            args.name = "build0-public-subnet-group";
+            args.description = "Public subnet group";
+            args.subnetIds = vpc.publicSubnets;
+            
             opts.import = "build0-public-subnet-group";
           },
         },
