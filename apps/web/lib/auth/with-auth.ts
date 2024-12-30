@@ -102,7 +102,7 @@ async function getJwks() {
   let jwks: JWK[] = [];
 
   const cachedJwks = (await redis.get(JWKS_CACHE_KEY)) as string | null;
-  console.log("cachedJwks", cachedJwks);
+  console.log("cachedJwks", typeof cachedJwks, cachedJwks);
   if (cachedJwks) {
     console.log("JWKS found in cache");
     jwks = JSON.parse(cachedJwks);
