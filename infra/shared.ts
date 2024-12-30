@@ -25,8 +25,8 @@ export const database =
             // TODO: remove me after vercel testing demo
             publiclyAccessible: true,
           },
-          subnetGroup: {
-            subnetIds: vpc.publicSubnets,
+          subnetGroup(args, opts, name) {
+            opts.import = "build0-public-subnet-group";
           },
         },
       })
