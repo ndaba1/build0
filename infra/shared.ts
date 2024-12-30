@@ -25,6 +25,9 @@ export const database =
             // TODO: remove me after vercel testing demo
             publiclyAccessible: true,
           },
+          subnetGroup: {
+            subnetIds: vpc.publicSubnets,
+          },
         },
       })
     : sst.aws.Postgres.get("BuildZeroDatabase", {
