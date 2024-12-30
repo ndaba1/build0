@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import { Resource } from "sst";
 import * as schema from "./schema";
 
-const cfg = Resource.BuildZeroDatabase;
+const cfg = Resource.BuildZeroDb;
 const pool = new Pool({
   host: cfg.host,
   port: cfg.port,
