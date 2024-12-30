@@ -128,6 +128,7 @@ async function verifyCognitoToken(token: string) {
 
     return payload as AccessTokenPayload;
   } catch (error) {
+    console.error("Error verifying token", error);
     return null;
   }
 }
