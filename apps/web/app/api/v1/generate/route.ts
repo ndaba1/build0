@@ -17,7 +17,6 @@ import { NextResponse } from "next/server";
 import path from "path";
 import PdfPrinter from "pdfmake";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
-import { Resource } from "sst";
 import { ZodAny, z } from "zod";
 import { fromError } from "zod-validation-error";
 
@@ -225,7 +224,7 @@ async function generatePdfBuffer(
 async function uploadPdfToS3(buffer: Buffer, key: string) {
   const command = new PutObjectCommand({
     Key: key,
-    Bucket: Resource.BuildZeroBucket.name,
+    Bucket: env.DOCUMENT_BUCKET_NAME,
     ContentType: "application/pdf",
     Body: buffer,
   });

@@ -1,7 +1,7 @@
+import { env } from "@/env";
 import { withDocument } from "@/lib/auth/with-document";
 import { throwError } from "@/lib/throw-error";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { Resource } from "sst";
 import { Params } from "typed-handlers";
 
 export const GET = withDocument<Params<"/api/v1/files/preview/[...s3Key]">>(
@@ -14,7 +14,7 @@ export const GET = withDocument<Params<"/api/v1/files/preview/[...s3Key]">>(
     }
 
     const command = new GetObjectCommand({
-      Bucket: Resource.BuildZeroImageBucket.name,
+      Bucket: env.DOCUMENT_BUCKET_NAME,
       Key: docKey,
     });
 

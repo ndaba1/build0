@@ -14,6 +14,14 @@ export const env = createEnv({
     ENABLE_SELF_SIGNUP: z.coerce.boolean().optional(),
     CONTENTFUL_SPACE_ID: z.string().min(1),
     CONTENTFUL_ACCESS_TOKEN: z.string().min(1),
+    DOCUMENT_BUCKET_NAME: z.string().min(1),
+    REDIS_HOST: z.string().min(1),
+    REDIS_PASSWORD: z.string(),
+    REDIS_USERNAME: z.string(),
+    DB_HOST: z.string().min(1),
+    DB_USERNAME: z.string().min(1),
+    DB_PASSWORD: z.string().min(1),
+    DB_NAME: z.string().min(1),
   },
   // If you're using Next.js < 13.4.4, you'll need to specify the runtimeEnv manually
   runtimeEnv: {
@@ -28,6 +36,14 @@ export const env = createEnv({
     ENABLE_SELF_SIGNUP: process.env.ENABLE_SELF_SIGNUP || undefined,
     CONTENTFUL_SPACE_ID: process.env.CONTENTFUL_SPACE_ID,
     CONTENTFUL_ACCESS_TOKEN: process.env.CONTENTFUL_ACCESS_TOKEN,
+    DOCUMENT_BUCKET_NAME: process.env.DOCUMENT_BUCKET_NAME,
+    REDIS_HOST: process.env.REDIS_HOST,
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+    REDIS_USERNAME: process.env.REDIS_USERNAME,
+    DB_HOST: process.env.DB_HOST,
+    DB_USERNAME: process.env.DB_USERNAME,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+    DB_NAME: process.env.DB_NAME,
   },
   // For Next.js >= 13.4.4, you only need to destructure client variables:
   // experimental__runtimeEnv: {

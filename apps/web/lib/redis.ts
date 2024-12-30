@@ -1,23 +1,21 @@
+import { env } from "@/env";
 import { Cluster } from "ioredis";
-import { Resource } from "sst";
-
-const cache = Resource.BuildZeroRedisCache;
 
 export const redis = new Cluster(
   [
     {
-      host: cache.host,
-      port: cache.port,
+      host: env.REDIS_HOST,
+      port: 6379,
     },
   ],
   {
     redisOptions: {
       tls: { checkServerIdentity: () => undefined },
-      username: cache.username,
-      password: cache.password,
+      username: env.REDIS_USERNAME,
+      password: env.REDIS_PASSWORD,
       showFriendlyErrorStack: true,
     },
-    slotsRefreshTimeout: 3000,
+    slotsRefreshTimeout: 30000,
     dnsLookup: (address, callback) => callback(null, address),
   }
 );

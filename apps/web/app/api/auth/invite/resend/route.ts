@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { withAuth } from "@/lib/auth/with-auth";
 import { throwError } from "@/lib/throw-error";
 import {
@@ -8,7 +9,6 @@ import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
 import { users } from "@repo/database/schema";
 import { NextResponse } from "next/server";
-import { Resource } from "sst";
 import { ZodAny, z } from "zod";
 import { fromError } from "zod-validation-error";
 
@@ -30,7 +30,7 @@ export const POST = withAuth(async ({ req, user }) => {
 
     const cmd = new AdminCreateUserCommand({
       Username: data.email,
-      UserPoolId: Resource.BuildZeroAuth.id,
+      UserPoolId: env.NEXT_PUBLIC_USER_POOL_ID,
       MessageAction: "RESEND",
       DesiredDeliveryMediums: ["EMAIL"],
       ClientMetadata: {
