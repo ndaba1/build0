@@ -14,6 +14,12 @@ export const database =
     ? new sst.aws.Postgres("BuildZeroDatabase", {
         vpc,
         proxy: true,
+        transform: {
+          instance: {
+            // TODO: remove me after vercel testing demo
+            publiclyAccessible: true
+          }
+        }
       })
     : sst.aws.Postgres.get("BuildZeroDatabase", {
         id: "build0-dev-buildzerodatabaseinstance",
