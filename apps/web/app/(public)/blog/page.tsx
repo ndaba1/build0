@@ -1,10 +1,9 @@
-import React from "react";
-import { Header } from "../header";
 import { Input } from "@/components/ui/input";
-import { SearchIcon } from "lucide-react";
 import { getBlogEntries } from "@/lib/cms";
 import { format } from "date-fns";
+import { SearchIcon } from "lucide-react";
 import Link from "next/link";
+import { Header } from "../header";
 
 export default async function BlogListing() {
   const entries = await getBlogEntries();
@@ -15,7 +14,7 @@ export default async function BlogListing() {
 
       <section className="py-16 space-y-6">
         <h1 className="text-4xl font-cal">
-          A few articles we think you might like (without ISR)
+          A few articles we think you might like
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl">
           Just a small team, trying to make the world a better place. One

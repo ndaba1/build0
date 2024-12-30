@@ -2,12 +2,14 @@ import { env } from "@/env";
 import { eq } from "@repo/database";
 import { db } from "@repo/database/client";
 import { projects, tokens, users } from "@repo/database/schema";
+import { Redis } from "@upstash/redis";
 import axios from "axios";
 import { JWK, createLocalJWKSet, jwtVerify } from "jose";
 import { NextRequest } from "next/server";
 import { ZodAny, z } from "zod";
 import { hashToken } from "../hash-token";
-import { redis } from "../redis";
+
+const redis = Redis.fromEnv();
 
 export function withAuth<T = z.infer<ZodAny>>(
   handler: (args: {
@@ -99,7 +101,7 @@ type AccessTokenPayload = {
 async function getJwks() {
   let jwks: JWK[] = [];
 
-  const cachedJwks = await redis.get(JWKS_CACHE_KEY);
+  const cachedJwks = (await redis.get(JWKS_CACHE_KEY)) as string | null;
   console.log("cachedJwks", cachedJwks);
   if (cachedJwks) {
     console.log("JWKS found in cache");
@@ -109,7 +111,9 @@ async function getJwks() {
     const { data } = await axios.get(jwksUri);
     jwks = data.keys;
 
-    await redis.set(JWKS_CACHE_KEY, JSON.stringify(jwks), "EX", 60 * 60 * 24);
+    await redis.set(JWKS_CACHE_KEY, JSON.stringify(jwks), {
+      ex: 60 * 60 * 24,
+    });
   }
 
   return createLocalJWKSet({ keys: jwks });
