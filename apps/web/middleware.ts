@@ -1,6 +1,7 @@
 import { fetchUserAttributes } from "aws-amplify/auth/server";
 import { NextRequest, NextResponse } from "next/server";
 import { runWithAmplifyServerContext } from "./lib/amplify";
+import { getRedirectTarget } from "./lib/domains";
 
 export const config = {
   matcher: [
@@ -34,17 +35,36 @@ const AUTH_ROUTES = new Set([
 ]);
 
 const API_VERSION = "v1"; // current api version
-const API_HOSTNAMES = new Set(["api.build0.dev", "api.build0.local:3000"]);
+const API_HOSTNAMES = new Set([
+  "api.build0.dev",
+  "api.buildzero.fyi",
+  "api.build0.local:3000",
+]);
 const FILE_SERVER_HOSTNAMES = new Set([
   "files.build0.dev",
+  "files.buildzero.fyi",
   "files.build0.local:3000",
 ]);
+
+function isCustomDomain(domain: string) {
+  console.log({ domain });
+  // doesn't include buildzero.fyi or build0.dev
+  return (
+    !["buildzero.fyi", "build0.dev"].some((d) => domain.includes(d)) &&
+    !domain.includes("localhost")
+  );
+}
+
+function isSubdomain(domain: string) {
+  // matches sub-domain pattern like terminus.buildzero.fyi
+  return domain.match(/^[a-z0-9-]+\.buildzero\.fyi$/);
+}
 
 export default async function middleware(request: NextRequest) {
   const host = request.headers.get("host") as string;
   const domain = host.replace("www.", "").toLowerCase();
 
-  // path is the path of the URL (e.g. dub.sh/stats/github -> /stats/github)
+  // path is the path of the URL
   const path = request.nextUrl.pathname;
 
   // fullPath is the full URL path (along with search params)
@@ -66,6 +86,35 @@ export default async function middleware(request: NextRequest) {
 
   const response = NextResponse.next();
   const user = await getUser(request, response);
+
+  if (isCustomDomain(domain) || isSubdomain(domain)) {
+    // if no user, always force redirect to sign-in
+    if (!user) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+
+    // if sub-domain, get project slug from sub-domain
+    if (isSubdomain(domain)) {
+      const slug = domain.split(".")[0];
+
+      return NextResponse.rewrite(new URL(`/${slug}`, request.url));
+    }
+
+    // if custom domain, get redirect target from vercel domains
+    if (isCustomDomain(domain)) {
+      const target = await getRedirectTarget(domain);
+
+      if (target) {
+        const slug = target.split(".")[0];
+
+        return NextResponse.rewrite(new URL(`/${slug}`, request.url));
+      }
+
+      return NextResponse.error();
+    }
+
+    return NextResponse.error();
+  }
 
   // authenticated user trying to access auth routes
   if (AUTH_ROUTES.has(path)) {

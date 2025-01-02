@@ -6,6 +6,7 @@ import {
   Code2Icon,
   CogIcon,
   FileCog2Icon,
+  GlobeIcon,
   LockKeyholeIcon,
   UsersIcon,
 } from "lucide-react";
@@ -17,6 +18,11 @@ const links = [
     label: "General",
     href: "/",
     icon: CogIcon,
+  },
+  {
+    label: "Domains",
+    href: "/domains",
+    icon: GlobeIcon,
   },
   {
     label: "Members",
