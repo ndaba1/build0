@@ -35,7 +35,7 @@ export const POST = withAuth(async ({ req, user }) => {
 
     const cmd = new AdminCreateUserCommand({
       Username: data.email,
-      UserPoolId: Resource.BuildZeroAuth.id,
+      UserPoolId: Resource.BuildZeroAuthn.id,
       UserAttributes: [
         {
           Name: "email",

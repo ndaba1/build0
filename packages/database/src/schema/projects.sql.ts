@@ -6,7 +6,7 @@ import {
   pgEnum,
   pgTable,
   text,
-  timestamp
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -91,6 +91,31 @@ export const projectUsers = pgTable(
   })
 );
 
+export const projectDomains = pgTable(
+  "project_domains",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    projectId: text("project_id").references(() => projects.id),
+    domain: text("domain").notNull(),
+
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "date",
+      withTimezone: true,
+    }).$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    domainIdx: index("domain_idx").on(t.domain),
+  })
+);
+
 export const projectUsersRelations = relations(projectUsers, ({ one }) => ({
   project: one(projects, {
     fields: [projectUsers.projectId],
@@ -102,6 +127,14 @@ export const projectUsersRelations = relations(projectUsers, ({ one }) => ({
   }),
 }));
 
+export const projectDomainsRelations = relations(projectDomains, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectDomains.projectId],
+    references: [projects.id],
+  }),
+}));
+
 export const projectRelations = relations(projects, ({ many }) => ({
   users: many(projectUsers),
+  domains: many(projectDomains),
 }));
