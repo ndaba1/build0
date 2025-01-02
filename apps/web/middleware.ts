@@ -89,19 +89,19 @@ export default async function middleware(request: NextRequest) {
 
   if (isCustomDomain(domain) || isSubdomain(domain)) {
     // if no user, always force redirect to sign-in
-    if (!user) {
+    if (!user && !path.startsWith("/sign-in")) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
     // if sub-domain, get project slug from sub-domain
-    if (isSubdomain(domain)) {
+    if (isSubdomain(domain) && path === "/") {
       const slug = domain.split(".")[0];
 
       return NextResponse.rewrite(new URL(`/${slug}`, request.url));
     }
 
     // if custom domain, get redirect target from vercel domains
-    if (isCustomDomain(domain)) {
+    if (isCustomDomain(domain) && path === "/") {
       const target = await getRedirectTarget(domain);
 
       if (target) {
