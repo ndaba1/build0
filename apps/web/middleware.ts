@@ -89,7 +89,7 @@ export default async function middleware(request: NextRequest) {
 
   if (isCustomDomain(domain) || isSubdomain(domain)) {
     // if no user, always force redirect to sign-in
-    if (!user && !path.startsWith("/sign-in")) {
+    if (!user && !path.includes("/sign-in")) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
@@ -110,10 +110,10 @@ export default async function middleware(request: NextRequest) {
         return NextResponse.rewrite(new URL(`/${slug}`, request.url));
       }
 
-      return NextResponse.error();
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    return NextResponse.error();
+    return response;
   }
 
   // authenticated user trying to access auth routes
