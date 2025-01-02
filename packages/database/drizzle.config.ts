@@ -1,7 +1,7 @@
 import { defineConfig } from "drizzle-kit";
 import { Resource } from "sst";
 
-const cfg = Resource.BuildZeroDatabase;
+const cfg = Resource.BuildZeroDb;
 
 export default defineConfig({
   dialect: "postgresql",

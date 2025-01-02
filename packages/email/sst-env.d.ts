@@ -5,7 +5,7 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "BuildZeroAuth": {
+    "BuildZeroAuthn": {
       "id": string
       "type": "sst.aws.CognitoUserPool"
     }
@@ -13,7 +13,7 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
-    "BuildZeroDatabase": {
+    "BuildZeroDb": {
       "database": string
       "host": string
       "password": string
@@ -32,17 +32,22 @@ declare module "sst" {
     }
     "BuildZeroRedisCache": {
       "host": string
-      "password": any
+      "password": string
       "port": number
       "type": "sst.aws.Redis"
       "username": string
     }
     "BuildZeroVpc": {
+      "bastion": string
       "type": "sst.aws.Vpc"
     }
-    "BuildZeroWeb": {
+    "BuildZeroWebApp": {
       "type": "sst.aws.Nextjs"
       "url": string
+    }
+    "CloudfrontDistributionId": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
     "ContentfulAccessToken": {
       "type": "sst.sst.Secret"
@@ -53,6 +58,14 @@ declare module "sst" {
       "value": string
     }
     "PostHogKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PostgresMigrator": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
+    "RevalidateSecret": {
       "type": "sst.sst.Secret"
       "value": string
     }

@@ -6,14 +6,29 @@ export const vpc =
     ? new sst.aws.Vpc("BuildZeroVpc", {
         bastion: true,
         nat: "ec2",
+        transform: {
+          vpc: {
+            enableDnsSupport: true,
+            enableDnsHostnames: true,
+          },
+        },
       })
     : sst.aws.Vpc.get("BuildZeroVpc", "vpc-08aad8b1cdd74a223");
 
 export const database =
   $app.stage === "dev"
-    ? new sst.aws.Postgres("BuildZeroDatabase", {
+    ? new sst.aws.Postgres("BuildZeroDb", {
         vpc,
         proxy: true,
+        transform: {
+          instance: {
+            // TODO: remove me after vercel testing demo
+            publiclyAccessible: true,
+          },
+          subnetGroup: {
+            subnetIds: vpc.publicSubnets
+          }
+        },
       })
     : sst.aws.Postgres.get("BuildZeroDatabase", {
         id: "build0-dev-buildzerodatabaseinstance",
