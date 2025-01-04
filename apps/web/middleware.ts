@@ -36,21 +36,19 @@ const AUTH_ROUTES = new Set([
 
 const API_VERSION = "v1"; // current api version
 const API_HOSTNAMES = new Set([
-  "api.build0.dev",
   "api.buildzero.fyi",
-  "api.build0.local:3000",
+  "api.buildzero.local:3000",
 ]);
 const FILE_SERVER_HOSTNAMES = new Set([
-  "files.build0.dev",
   "files.buildzero.fyi",
-  "files.build0.local:3000",
+  "files.buildzero.local:3000",
 ]);
 
 function isCustomDomain(domain: string) {
   console.log({ domain });
-  // doesn't include buildzero.fyi or build0.dev
+  // doesn't include buildzero.fyi or localhost
   return (
-    !["buildzero.fyi", "build0.dev"].some((d) => domain.includes(d)) &&
+    !["buildzero.fyi"].some((d) => domain.includes(d)) &&
     !domain.includes("localhost")
   );
 }
@@ -136,13 +134,6 @@ export default async function middleware(request: NextRequest) {
   }
   // accessing protected routes
   else if (!PUBLIC_ROUTES.has(path) && !user) {
-    console.log(
-      `Accessing protected route ${path} with user: ${JSON.stringify(
-        user,
-        null,
-        2
-      )}`
-    );
     if (user) {
       return;
     }
