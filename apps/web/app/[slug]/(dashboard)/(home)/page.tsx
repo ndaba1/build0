@@ -1,8 +1,8 @@
 import { DashboardPage } from "@/components/layout";
 import { DatePicker } from "@/components/ui/date-picker";
-import { count, eq } from "@repo/database";
+import { and, count, eq } from "@repo/database";
 import { db } from "@repo/database/client";
-import { documents, jobs, templates } from "@repo/database/schema";
+import { documents, jobs, projects, templates } from "@repo/database/schema";
 import {
   CheckCircle2Icon,
   FileTextIcon,
@@ -19,15 +19,28 @@ export const metadata: Metadata = {
   title: "Dashboard",
 };
 
-export default async function Home() {
+export default async function Home({ params }: { params: { slug: string } }) {
   const res = await Promise.all([
-    db.select({ count: count() }).from(documents),
+    db
+      .select({ count: count() })
+      .from(documents)
+      .leftJoin(projects, eq(documents.projectId, projects.id))
+      .where(eq(projects.slug, params.slug)),
     db
       .select({ count: count() })
       .from(jobs)
-      .where(eq(jobs.status, "COMPLETED")),
-    db.select({ count: count() }).from(jobs).where(eq(jobs.status, "FAILED")),
-    db.select({ count: count() }).from(templates),
+      .leftJoin(projects, eq(jobs.projectId, projects.id))
+      .where(and(eq(projects.slug, params.slug), eq(jobs.status, "COMPLETED"))),
+    db
+      .select({ count: count() })
+      .from(jobs)
+      .leftJoin(projects, eq(jobs.projectId, projects.id))
+      .where(and(eq(projects.slug, params.slug), eq(jobs.status, "FAILED"))),
+    db
+      .select({ count: count() })
+      .from(templates)
+      .leftJoin(projects, eq(templates.projectId, projects.id))
+      .where(eq(projects.slug, params.slug)),
   ]);
 
   const [totalDocuments, completedJobs, failedJobs, totalTemplates] = res.map(
