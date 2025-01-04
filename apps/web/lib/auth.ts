@@ -1,13 +1,5 @@
 import { env } from "@/env";
 import { ResourcesConfig } from "aws-amplify";
-import { cognitoUserPoolsTokenProvider } from "aws-amplify/auth/cognito";
-import { CookieStorage } from "aws-amplify/utils";
-
-cognitoUserPoolsTokenProvider.setKeyValueStorage(
-  new CookieStorage({
-    domain: ".buildzero.fyi",
-  })
-);
 
 export const authConfig: ResourcesConfig = {
   Auth: {
