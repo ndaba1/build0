@@ -9,6 +9,7 @@ import { queryClient } from "@/lib/query-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Domain, DomainCard } from "./domain-card";
+import { Card } from "@/components/ui/card";
 
 export function DomainsPageClient({ hasSubdomain }: { hasSubdomain: boolean }) {
   const { name } = useProject();
@@ -50,7 +51,7 @@ export function DomainsPageClient({ hasSubdomain }: { hasSubdomain: boolean }) {
 
   return (
     <main className="space-y-6">
-      <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+      <Card className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
         <div className="space-y-0.5">
           <p className="font-medium">Project sub-domain</p>
           <p className="text-sm text-muted-foreground">
@@ -60,7 +61,7 @@ export function DomainsPageClient({ hasSubdomain }: { hasSubdomain: boolean }) {
         </div>
 
         <Switch checked={hasSubdomain} disabled={hasSubdomain} />
-      </div>
+      </Card>
 
       <div className="space-y-2 p-1.5">
         <p className="text-lg font-semibold">Custom Domains</p>
