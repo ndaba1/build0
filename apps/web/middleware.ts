@@ -100,6 +100,10 @@ export default async function middleware(request: NextRequest) {
       );
     }
 
+    if (user && !isProjectMember && path.includes("/sign-in")) {
+      return;
+    }
+
     // user signed-in but not member of project
     if (user && !isProjectMember && !path.includes("/sign-in")) {
       // force sign-in infinitely - dont allow them to proceed
