@@ -8,7 +8,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Domain, DomainCard } from "./domain-card";
 
-export function DomainsPageClient({ hasSubdomain }: { hasSubdomain: boolean }) {
+export function DomainsPageClient() {
   const { idToken } = useAuth();
 
   const [domain, setDomain] = useState("");
@@ -57,17 +57,11 @@ export function DomainsPageClient({ hasSubdomain }: { hasSubdomain: boolean }) {
       <div className="flex items-center gap-4">
         <Input
           className="h-12"
-          disabled={!hasSubdomain}
           placeholder="Add a custom domain to your project"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
         />
-        <Button
-          size="lg"
-          disabled={!hasSubdomain}
-          loading={isPending}
-          onClick={() => mutate(domain)}
-        >
+        <Button size="lg" loading={isPending} onClick={() => mutate(domain)}>
           Save
         </Button>
       </div>
