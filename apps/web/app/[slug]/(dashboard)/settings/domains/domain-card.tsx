@@ -3,12 +3,13 @@
 import { useAuth } from "@/components/authenticator";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
+import { isApexDomain } from "@/lib/domains/utils";
 import { queryClient } from "@/lib/query-client";
 import { CheckCircleIcon, XIcon } from "lucide-react";
 import { useState } from "react";
@@ -92,7 +93,7 @@ export function DomainCard({ domain, config }: Domain) {
         </CardDescription>
       </CardHeader>
 
-      {config.misconfigured ? (
+      {config.misconfigured && isApexDomain(domain) ? (
         <CardContent className="border-t grid pt-6 grid-cols-12 gap-8">
           <div className="col-span-12 md:col-span-5 space-y-4">
             <p>Set the nameservers of {domain} to:</p>
@@ -124,6 +125,21 @@ export function DomainCard({ domain, config }: Domain) {
               <p>Type: A Record</p>
               <p>Name: @</p>
               <p>Value: 76.76.21.21</p>
+            </Card>
+          </div>
+        </CardContent>
+      ) : null}
+
+      {config.misconfigured && !isApexDomain(domain) ? (
+        <CardContent className="border-t grid pt-6 grid-cols-12 gap-8">
+          <div className="col-span-12 space-y-4">
+            <p>Set the following record on your DNS provider to continue:</p>
+            <Card className="p-4 shadow-none text-sm">
+              <p>Type: CNAME Record</p>
+              <p>Name: {domain.split(".").slice(0, -2).join(".")}</p>
+              <p>
+                Value: <code>cname.vercel-dns.com.</code>
+              </p>
             </Card>
           </div>
         </CardContent>
