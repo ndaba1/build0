@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  aws-amplify:
+    hash: n4tequainw7tb4pmskjstkfvqi
+    path: patches/aws-amplify.patch
+
 importers:
 
   .:
@@ -38,7 +43,7 @@ importers:
         version: 1.0.5(zod@3.23.8)
       '@aws-amplify/adapter-nextjs':
         specifier: ^1.2.12
-        version: 1.2.22(aws-amplify@6.6.5)(next@14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 1.2.22(aws-amplify@6.6.5(patch_hash=n4tequainw7tb4pmskjstkfvqi))(next@14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@aws-sdk/client-cloudfront':
         specifier: ^3.716.0
         version: 3.716.0
@@ -143,7 +148,7 @@ importers:
         version: 4.0.21(react@18.3.1)(zod@3.23.8)
       aws-amplify:
         specifier: ^6.4.3
-        version: 6.6.5
+        version: 6.6.5(patch_hash=n4tequainw7tb4pmskjstkfvqi)
       axios:
         specifier: ^1.7.7
         version: 1.7.7
@@ -6245,9 +6250,9 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@aws-amplify/adapter-nextjs@1.2.22(aws-amplify@6.6.5)(next@14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@aws-amplify/adapter-nextjs@1.2.22(aws-amplify@6.6.5(patch_hash=n4tequainw7tb4pmskjstkfvqi))(next@14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
-      aws-amplify: 6.6.5
+      aws-amplify: 6.6.5(patch_hash=n4tequainw7tb4pmskjstkfvqi)
       aws-jwt-verify: 4.0.1
       cookie: 0.7.2
       next: 14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -10777,7 +10782,7 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.0.0
 
-  aws-amplify@6.6.5:
+  aws-amplify@6.6.5(patch_hash=n4tequainw7tb4pmskjstkfvqi):
     dependencies:
       '@aws-amplify/analytics': 7.0.52(@aws-amplify/core@6.4.5)
       '@aws-amplify/api': 6.0.54(@aws-amplify/core@6.4.5)

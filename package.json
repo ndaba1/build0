@@ -24,5 +24,10 @@
   "scripts": {
     "dev": "npm run web:dev",
     "web:dev": "cd apps/web && npm run dev"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "aws-amplify": "patches/aws-amplify.patch"
+    }
   }
 }

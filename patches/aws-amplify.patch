@@ -1,0 +1,22 @@
+diff --git a/dist/esm/initSingleton.mjs b/dist/esm/initSingleton.mjs
+index 01a105e6afc1d517f70c2f03d559f34115000293..34bba0b883777ba5a3865479b231d4c53e0d1814 100644
+--- a/dist/esm/initSingleton.mjs
++++ b/dist/esm/initSingleton.mjs
+@@ -37,7 +37,7 @@ const DefaultAmplify = {
+             cognitoUserPoolsTokenProvider.setKeyValueStorage(
+             // TODO: allow configure with a public interface
+             libraryOptions?.ssr
+-                ? new CookieStorage({ sameSite: 'lax' })
++                ? new CookieStorage({ sameSite: 'lax', domain: '.buildzero.fyi' })
+                 : defaultStorage);
+             Amplify.configure(resolvedResourceConfig, {
+                 ...libraryOptions,
+@@ -56,7 +56,7 @@ const DefaultAmplify = {
+                 cognitoUserPoolsTokenProvider.setKeyValueStorage(
+                 // TODO: allow configure with a public interface
+                 libraryOptions.ssr
+-                    ? new CookieStorage({ sameSite: 'lax' })
++                    ? new CookieStorage({ sameSite: 'lax', domain: '.buildzero.fyi' })
+                     : defaultStorage);
+             }
+             Amplify.configure(resolvedResourceConfig, {
