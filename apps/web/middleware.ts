@@ -128,8 +128,10 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/onboarding", request.url));
   } else if (user && user["custom:default_project"] && path === "/") {
     console.log("Redirecting to default project");
+    const project = user["custom:default_project"];
+
     return NextResponse.redirect(
-      new URL(`/${user["custom:default_project"]}`, request.url)
+      new URL(`https://${project}.buildzero.fyi`, request.url)
     );
   }
 }
