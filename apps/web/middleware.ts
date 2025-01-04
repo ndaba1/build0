@@ -1,7 +1,7 @@
 import { fetchUserAttributes } from "aws-amplify/auth/server";
 import { NextRequest, NextResponse } from "next/server";
 import { runWithAmplifyServerContext } from "./lib/amplify";
-import { getRedirectTarget } from "./lib/domains";
+import { getDomainProject } from "./lib/domains";
 
 export const config = {
   matcher: [
@@ -44,15 +44,6 @@ const FILE_SERVER_HOSTNAMES = new Set([
   "files.buildzero.local:3000",
 ]);
 
-function isCustomDomain(domain: string) {
-  console.log({ domain });
-  // doesn't include buildzero.fyi or localhost
-  return (
-    !["buildzero.fyi"].some((d) => domain.includes(d)) &&
-    !domain.includes("localhost")
-  );
-}
-
 function isSubdomain(domain: string) {
   // matches sub-domain pattern like terminus.buildzero.fyi
   return domain.match(/^[a-z0-9-]+\.buildzero\.fyi$/);
@@ -85,42 +76,35 @@ export default async function middleware(request: NextRequest) {
   const response = NextResponse.next();
   const user = await getUser(request, response);
 
-  if (isCustomDomain(domain) || isSubdomain(domain)) {
+  // going through custom domains
+  if (host !== "www.buildzero.fyi") {
     // if no user, always force redirect to sign-in
     if (!user && !path.includes("/sign-in")) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
-    let projectSlug = undefined;
-
-    // if sub-domain, get project slug from sub-domain
-    if (isSubdomain(domain)) {
-      const slug = domain.split(".")[0];
-      projectSlug = slug;
+    // use default project on localhost
+    if (user && host.includes("localhost") && !path.includes("/sign-in")) {
+      const slug = user["custom:default_project"];
+      return NextResponse.rewrite(new URL(`/${slug}${fullPath}`, request.url));
     }
 
-    // if custom domain, get redirect target from vercel domains
-    if (isCustomDomain(domain)) {
-      const target = await getRedirectTarget(domain);
+    const projectSlug = await getAssociatedProject(domain);
+    const isProjectMember =
+      user && user["custom:default_project"] === projectSlug;
 
-      if (target) {
-        const slug = target.split(".")[0];
-        projectSlug = slug;
-      }
-    }
-
-    // user accessing private project via custom domain or sub-domain
-    if (user && user["custom:default_project"] !== projectSlug) {
-      return NextResponse.redirect(
-        new URL("https://buildzero.fyi", request.url)
+    // has access to project
+    if (user && isProjectMember) {
+      return NextResponse.rewrite(
+        new URL(`/${projectSlug}${fullPath}`, request.url)
       );
     }
 
-    if (path === "/" && projectSlug) {
-      return NextResponse.redirect(new URL(`/${projectSlug}`, request.url));
+    // user signed-in but not member of project
+    if (user && !isProjectMember && !path.includes("/sign-in")) {
+      // force sign-in infinitely - dont allow them to proceed
+      return NextResponse.redirect(new URL("/sign-in", request.url));
     }
-
-    return response;
   }
 
   // authenticated user trying to access auth routes
@@ -139,14 +123,14 @@ export default async function middleware(request: NextRequest) {
     }
 
     return NextResponse.redirect(new URL(`/sign-in?next=${path}`, request.url));
+  } else if (user && !user["custom:is_onboarded"] && path !== "/onboarding") {
+    console.log("Redirecting to onboarding");
+    return NextResponse.redirect(new URL("/onboarding", request.url));
   } else if (user && user["custom:default_project"] && path === "/") {
     console.log("Redirecting to default project");
     return NextResponse.redirect(
       new URL(`/${user["custom:default_project"]}`, request.url)
     );
-  } else if (user && !user["custom:is_onboarded"] && path !== "/onboarding") {
-    console.log("Redirecting to onboarding");
-    return NextResponse.redirect(new URL("/onboarding", request.url));
   }
 }
 
@@ -168,4 +152,21 @@ async function getUser(request: NextRequest, response: NextResponse) {
   } catch (error) {
     return null;
   }
+}
+
+async function getAssociatedProject(domain: string) {
+  let projectSlug = undefined;
+
+  // if sub-domain, get project slug from sub-domain
+  if (isSubdomain(domain)) {
+    const slug = domain.split(".")[0];
+    projectSlug = slug;
+  }
+  // if not sub-domain, tis a custom domain
+  else {
+    const target = await getDomainProject(domain);
+    projectSlug = target;
+  }
+
+  return projectSlug;
 }

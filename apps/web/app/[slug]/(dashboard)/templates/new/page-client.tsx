@@ -53,7 +53,7 @@ export function CreateTemplateForm() {
       await queryClient.invalidateQueries({ queryKey: ["templates"] });
 
       setRedirecting(true);
-      router.replace(`/${slug}/editor/${data.template.id}`);
+      window.location.href = `/editor/${data.template.id}`;
     },
   });
 

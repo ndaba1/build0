@@ -3,16 +3,12 @@
 import { useAuth } from "@/components/authenticator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { useProject } from "@/hooks/use-project";
 import { queryClient } from "@/lib/query-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Domain, DomainCard } from "./domain-card";
-import { Card } from "@/components/ui/card";
 
 export function DomainsPageClient({ hasSubdomain }: { hasSubdomain: boolean }) {
-  const { name } = useProject();
   const { idToken } = useAuth();
 
   const [domain, setDomain] = useState("");
@@ -39,7 +35,6 @@ export function DomainsPageClient({ hasSubdomain }: { hasSubdomain: boolean }) {
         },
         body: JSON.stringify({
           domain,
-          redirect: `${name}.buildzero.fyi`,
         }),
       });
 
@@ -51,23 +46,11 @@ export function DomainsPageClient({ hasSubdomain }: { hasSubdomain: boolean }) {
 
   return (
     <main className="space-y-6">
-      <Card className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-        <div className="space-y-0.5">
-          <p className="font-medium">Project sub-domain</p>
-          <p className="text-sm text-muted-foreground">
-            Enable your project sub-domain to access dashboard via{" "}
-            <code className="font-medium">{name}.buildzero.fyi</code>
-          </p>
-        </div>
-
-        <Switch checked={hasSubdomain} disabled={hasSubdomain} />
-      </Card>
-
       <div className="space-y-2 p-1.5">
         <p className="text-lg font-semibold">Custom Domains</p>
         <p className="text-sm text-muted-foreground">
           Add a custom domain to your project to access the dashboard via your
-          own domain. Enable project sub-domains before proceeding
+          own domain.
         </p>
       </div>
 

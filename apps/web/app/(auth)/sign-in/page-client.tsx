@@ -5,19 +5,19 @@ import Link from "next/link";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,8 +67,6 @@ export function LoginForm() {
         password: values.password,
       });
 
-      console.log({ isSignedIn, nextStep });
-
       const requiresNewPwd =
         nextStep.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED";
 
@@ -79,7 +77,9 @@ export function LoginForm() {
         setIsRedirecting(true);
 
         const next = searchParams.get("next");
-        router.replace(next || "/");
+
+        // force refresh to go through middleware
+        window.location.href = next || "/";
       }
     },
   });

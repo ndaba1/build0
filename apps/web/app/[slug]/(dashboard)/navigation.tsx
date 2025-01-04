@@ -1,6 +1,5 @@
 "use client";
 
-import { useProject } from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { SparklesIcon } from "lucide-react";
 import Link from "next/link";
@@ -8,7 +7,6 @@ import { usePathname } from "next/navigation";
 
 export function DashboardNavigation() {
   const pathname = usePathname();
-  const { slug } = useProject();
   const links = [
     {
       name: "Dashboard",
@@ -36,7 +34,7 @@ export function DashboardNavigation() {
           <span
             className={cn(
               `underline-offset-[24px] decoration-[2px] cursor-pointer transition-colors`,
-              isActive(`/${slug}/prompts`)
+              isActive(`/prompts`)
                 ? "underline font-medium text-foreground decoration-primary"
                 : "hover:underline decoration-muted-foreground/40 hover:text-foreground"
             )}
@@ -51,21 +49,17 @@ export function DashboardNavigation() {
   ];
 
   function isActive(href: string) {
-    if (href === `/${slug}`) {
-      return pathname === `/${slug}`;
+    if (href === "/") {
+      return pathname === "/";
     }
 
     return pathname.startsWith(href);
   }
 
-  const normalizedLinks = links.map((link) => ({
-    ...link,
-    href: `/${slug}${link.href.replace(/\/$/, "")}`,
-  }));
 
   return (
     <nav className="flex items-center gap-8 text-muted-foreground/80">
-      {normalizedLinks.map((link) => (
+      {links.map((link) => (
         <Link
           href={link.href}
           key={link.href}

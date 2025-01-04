@@ -115,7 +115,9 @@ export default function OnboardingForm() {
     },
     onSuccess: () => {
       setRedirecting(true);
-      router.replace(`/${form.getValues().slug}`);
+
+      // force refresh to go through middleware
+      window.location.href = "/";
     },
   });
 

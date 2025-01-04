@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { isApexDomain } from "./utils";
 
 const BASE_URL = "https://api.vercel.com";
 const BASE_DOMAIN = "buildzero.fyi";
@@ -36,19 +37,22 @@ export async function addProjectSubdomain(name: string) {
 
 export async function addCustomDomain(
   domain: string,
-  { redirect }: { redirect: string }
+  { project }: { project: string }
 ) {
-  const res = await fetch(`${BASE_URL}/v10/${PROJECT_SLUG}`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      name: domain,
-    }),
-  });
+  // apex domains must be added to vercel, otherwise, user
+  // can simply add a CNAME record to their DNS provider
+  if (isApexDomain(domain)) {
+    const res = await fetch(`${BASE_URL}/v10/${PROJECT_SLUG}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        name: domain,
+      }),
+    });
+  }
 
-  await redis.set(`domain:${domain}`, redirect);
-
-  return res.json();
+  // store domain/project-mapping in Redis
+  await redis.set(`domain:${domain}`, project);
 }
 
 export async function removeCustomDomain(domain: string) {
@@ -62,7 +66,7 @@ export async function removeCustomDomain(domain: string) {
   return res.json();
 }
 
-export async function getRedirectTarget(domain: string) {
+export async function getDomainProject(domain: string) {
   const data = await redis.get(`domain:${domain}`);
 
   if (data) {

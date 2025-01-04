@@ -1,8 +1,8 @@
 import { withAuth } from "@/lib/auth/with-auth";
 import {
-    addCustomDomain,
-    getDomainConfig,
-    removeCustomDomain,
+  addCustomDomain,
+  getDomainConfig,
+  removeCustomDomain,
 } from "@/lib/domains";
 import { and, eq } from "@repo/database";
 import { db } from "@repo/database/client";
@@ -37,17 +37,18 @@ export const GET = withAuth(async ({ req, user }) => {
 
 export const POST = withAuth(async ({ req, user }) => {
   const body = await req.json();
-  const { domain, redirect } = body;
+  const { domain } = body;
 
   const [project] = await db
     .select({
       id: projectUsers.projectId,
+      slug: projects.slug,
     })
     .from(projectUsers)
     .where(eq(projectUsers.userId, user.id));
 
   await addCustomDomain(domain, {
-    redirect,
+    project: project.slug,
   });
 
   await db.insert(projectDomains).values({

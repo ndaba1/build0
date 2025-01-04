@@ -1,6 +1,5 @@
 "use client";
 
-import { useProject } from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import {
   Code2Icon,
@@ -57,12 +56,10 @@ const links = [
 
 export function SettingsNavigation() {
   const pathname = usePathname();
-  const { slug } = useProject();
 
   function isActive(href: string) {
-    console.log({ href, pathname, slug });
-    if (pathname === `/${slug}/settings`) {
-      return pathname === href || href === `/${slug}/settings`;
+    if (pathname === `/settings`) {
+      return pathname === href || href === `/settings`;
     }
 
     return pathname === href;
@@ -70,7 +67,7 @@ export function SettingsNavigation() {
 
   const normalizedLinks = links.map((link) => ({
     ...link,
-    href: `/${slug}/settings${link.href.replace(/\/$/, "")}`,
+    href: `/settings${link.href.replace(/\/$/, "")}`,
   }));
 
   return (
@@ -82,8 +79,7 @@ export function SettingsNavigation() {
               className={cn(
                 "md:hover:bg-muted-foreground/10 flex items-center gap-2 w-full border-b px-4 py-6 text-lg md:rounded-md md:border-none md:py-3 md:text-base",
                 !isActive(link.href) ? "text-muted-foreground" : "font-medium",
-                link.disabled &&
-                  "cursor-not-allowed pointer-events-none"
+                link.disabled && "cursor-not-allowed pointer-events-none"
               )}
               href={link.href}
             >
