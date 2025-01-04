@@ -93,24 +93,33 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
-    // if sub-domain, get project slug from sub-domain
-    if (isSubdomain(domain) && path === "/") {
-      const slug = domain.split(".")[0];
+    let projectSlug = undefined;
 
-      return NextResponse.rewrite(new URL(`/${slug}`, request.url));
+    // if sub-domain, get project slug from sub-domain
+    if (isSubdomain(domain)) {
+      const slug = domain.split(".")[0];
+      projectSlug = slug;
     }
 
     // if custom domain, get redirect target from vercel domains
-    if (isCustomDomain(domain) && path === "/") {
+    if (isCustomDomain(domain)) {
       const target = await getRedirectTarget(domain);
 
       if (target) {
         const slug = target.split(".")[0];
-
-        return NextResponse.rewrite(new URL(`/${slug}`, request.url));
+        projectSlug = slug;
       }
+    }
 
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    // user accessing private project via custom domain or sub-domain
+    if (user && user["custom:default_project"] !== projectSlug) {
+      return NextResponse.redirect(
+        new URL("https://buildzero.fyi", request.url)
+      );
+    }
+
+    if (path === "/" && projectSlug) {
+      return NextResponse.redirect(new URL(`/${projectSlug}`, request.url));
     }
 
     return response;
