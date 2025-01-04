@@ -45,6 +45,7 @@ export const POST = withAuth(async ({ req, user }) => {
       slug: projects.slug,
     })
     .from(projectUsers)
+    .innerJoin(projects, eq(projects.id, projectUsers.projectId))
     .where(eq(projectUsers.userId, user.id));
 
   await addCustomDomain(domain, {
