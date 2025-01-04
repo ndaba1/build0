@@ -122,12 +122,12 @@ export default async function middleware(request: NextRequest) {
   }
   // accessing protected routes
   else if (!PUBLIC_ROUTES.has(path) && !user) {
-    if (user) {
-      return;
-    }
-
     return NextResponse.redirect(new URL(`/sign-in?next=${path}`, request.url));
-  } else if (user && !user["custom:is_onboarded"] && path !== "/onboarding") {
+  } else if (
+    user &&
+    user["custom:is_onboarded"] !== "true" &&
+    path !== "/onboarding"
+  ) {
     console.log("Redirecting to onboarding");
     return NextResponse.redirect(new URL("/onboarding", request.url));
   } else if (user && user["custom:default_project"] && path === "/") {
