@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { signIn } from "aws-amplify/auth";
+import { signIn, signOut } from "aws-amplify/auth";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -62,6 +62,9 @@ export function LoginForm() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (values: z.infer<typeof schema>) => {
+      // force sign out before signing in
+      await signOut();
+
       const { isSignedIn, nextStep } = await signIn({
         username: values.email,
         password: values.password,
