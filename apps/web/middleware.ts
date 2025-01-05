@@ -77,7 +77,7 @@ export default async function middleware(request: NextRequest) {
   const user = await getUser(request, response);
 
   // going through custom domains
-  if (host !== "www.buildzero.fyi") {
+  if (domain !== "buildzero.fyi") {
     // if no user, always force redirect to sign-in
     if (!user && !path.includes("/sign-in")) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
