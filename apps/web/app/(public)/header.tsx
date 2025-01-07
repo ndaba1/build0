@@ -82,7 +82,7 @@ export function Header({ showNav = true }: { showNav?: boolean }) {
         <HeaderCTA />
       ) : (
         <>
-          <div className="hidden sm:flex col-span-6" />
+          <div className="flex col-span-6" />
           <HeaderCTA />
         </>
       )}

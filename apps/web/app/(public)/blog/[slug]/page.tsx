@@ -22,10 +22,10 @@ export default async function BlogEntry({
   const entry = await getEntryBySlug(params.slug);
 
   return (
-    <main className="w-full px-4 max-w-3xl mx-auto pb-20">
+    <main className="w-full max-w-3xl mx-auto pb-20">
       <Header showNav={false} />
 
-      <section className="py-8 space-y-6">
+      <section className="p-8 space-y-6">
         <div className="inline-flex gap-2">
           <ChevronLeftIcon className="w-6 h-6" />
           <Link href="/blog" className="text-blue-500">

@@ -9,10 +9,10 @@ export default async function BlogListing() {
   const entries = await getBlogEntries();
 
   return (
-    <main className="w-full px-4 max-w-4xl mx-auto pb-20">
+    <main className="w-full max-w-4xl mx-auto pb-20">
       <Header showNav={false} />
 
-      <section className="py-16 space-y-6">
+      <section className="py-16 px-8 space-y-6">
         <h1 className="text-4xl font-cal">
           A few articles we think you might like
         </h1>
