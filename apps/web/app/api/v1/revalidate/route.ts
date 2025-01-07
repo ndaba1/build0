@@ -2,6 +2,7 @@ import { invalidateCloudFrontPaths } from "@/lib/cloudfront";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
+// /api/v1/revalidate/route
 export const POST = async (req: NextRequest) => {
   const secret = req.headers.get("x-revalidate-secret");
 
