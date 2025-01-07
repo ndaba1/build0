@@ -37,7 +37,7 @@ export default async function BlogListing() {
           <Link
             href={`/blog/${entry.slug}`}
             key={idx}
-            className="py-6 px-4 border-t space-y-4 cursor-pointer hover:bg-gray-50"
+            className="p-6 sm:px-4 border-t space-y-4 cursor-pointer hover:bg-gray-50"
           >
             <h2 className="text-2xl font-cal">{entry.title as string}</h2>
             <p className="text-lg text-muted-foreground">
