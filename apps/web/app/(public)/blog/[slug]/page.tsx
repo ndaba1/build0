@@ -1,11 +1,10 @@
 import { getBlogEntries, getEntryBySlug } from "@/lib/cms";
-import React from "react";
-import { Header } from "../../header";
-import { format } from "date-fns";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { BLOCKS, INLINES } from "@contentful/rich-text-types";
+import { format } from "date-fns";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
+import { Header } from "../../header";
 
 export async function generateStaticParams() {
   const entries = await getBlogEntries();
@@ -23,7 +22,7 @@ export default async function BlogEntry({
   const entry = await getEntryBySlug(params.slug);
 
   return (
-    <main className="w-full max-w-3xl mx-auto pb-20">
+    <main className="w-full px-4 max-w-3xl mx-auto pb-20">
       <Header showNav={false} />
 
       <section className="py-8 space-y-6">

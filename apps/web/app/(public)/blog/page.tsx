@@ -1,16 +1,15 @@
-import React from "react";
-import { Header } from "../header";
 import { Input } from "@/components/ui/input";
-import { SearchIcon } from "lucide-react";
 import { getBlogEntries } from "@/lib/cms";
 import { format } from "date-fns";
+import { SearchIcon } from "lucide-react";
 import Link from "next/link";
+import { Header } from "../header";
 
 export default async function BlogListing() {
   const entries = await getBlogEntries();
 
   return (
-    <main className="w-full max-w-4xl mx-auto pb-20">
+    <main className="w-full px-4 max-w-4xl mx-auto pb-20">
       <Header showNav={false} />
 
       <section className="py-16 space-y-6">
