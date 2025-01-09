@@ -1,6 +1,5 @@
-import { vpc, database, docBucket, imageBucket, redis } from "./shared";
-import { userPool, userPoolClient } from "./auth";
 import { customAlphabet } from "nanoid";
+import { userPool, userPoolClient } from "./auth";
 import {
   cloudfrontDistributionId,
   contentfulAccessToken,
@@ -8,6 +7,7 @@ import {
   posthogKey,
   revalidateSecret,
 } from "./secrets";
+import { database, docBucket, imageBucket, redis, vpc } from "./shared";
 import { cloudfrontFunctionCode } from "./utils";
 
 // no uppercase to avoid CNAME errors
@@ -100,9 +100,21 @@ export const website = new sst.aws.Nextjs("BuildZeroWebApp", {
 });
 
 if ($app.stage === "dev") {
-  docBucket.subscribe(
+  const lambdaDlq = new aws.sqs.Queue("BuildZeroPreviewerDLQ", {
+    name: "LambdaDLQ",
+  });
+
+  const fn = docBucket.subscribe(
     {
       vpc,
+      versioning: true,
+      transform: {
+        function: {
+          deadLetterConfig: {
+            targetArn: lambdaDlq.arn,
+          },
+        },
+      },
       handler: "packages/previewer/src/index.handler",
       timeout: "10 minutes",
       memory: "3008 MB",
@@ -122,12 +134,34 @@ if ($app.stage === "dev") {
 
         DOCUMENT_TOKEN_SECRET: process.env.DOCUMENT_TOKEN_SECRET,
       },
-    },
+    } satisfies sst.aws.FunctionArgs,
     {
       events: ["s3:ObjectCreated:*"],
     }
   );
+
+  const func = fn.nodes.function;
+
+  const lambdaSuccessTopic = new aws.sns.Topic(
+    "BuildZeroPreviewerSuccessTopic",
+    {
+      name: "LambdaSuccessTopic",
+    }
+  );
+
+  const lambdaFailureTopic = new aws.sns.Topic("BuildZeroPreviewerErrorTopic", {
+    name: "LambdaErrorTopic",
+  });
+
+  new aws.lambda.FunctionEventInvokeConfig("BuildZeroPreviewerInvokeConfig", {
+    functionName: func.name,
+    destinationConfig: {
+      onFailure: { destination: lambdaFailureTopic.arn },
+      onSuccess: { destination: lambdaSuccessTopic.arn },
+    },
+  });
 }
 
-export * from "./shared";
 export * from "./auth";
+export * from "./shared";
+
