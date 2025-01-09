@@ -104,6 +104,17 @@ if ($app.stage === "dev") {
     name: "LambdaDLQ",
   });
 
+  const lambdaSuccessTopic = new aws.sns.Topic(
+    "BuildZeroPreviewerSuccessTopic",
+    {
+      name: "LambdaSuccessTopic",
+    }
+  );
+
+  const lambdaFailureTopic = new aws.sns.Topic("BuildZeroPreviewerErrorTopic", {
+    name: "LambdaErrorTopic",
+  });
+
   const fn = docBucket.subscribe(
     {
       vpc,
@@ -134,6 +145,16 @@ if ($app.stage === "dev") {
 
         DOCUMENT_TOKEN_SECRET: process.env.DOCUMENT_TOKEN_SECRET,
       },
+      permissions: [
+        {
+          actions: ["sqs:*"],
+          resources: [lambdaDlq.arn],
+        },
+        {
+          actions: ["sns:*"],
+          resources: [lambdaFailureTopic.arn, lambdaSuccessTopic.arn],
+        },
+      ],
     } satisfies sst.aws.FunctionArgs,
     {
       events: ["s3:ObjectCreated:*"],
@@ -141,17 +162,6 @@ if ($app.stage === "dev") {
   );
 
   const func = fn.nodes.function;
-
-  const lambdaSuccessTopic = new aws.sns.Topic(
-    "BuildZeroPreviewerSuccessTopic",
-    {
-      name: "LambdaSuccessTopic",
-    }
-  );
-
-  const lambdaFailureTopic = new aws.sns.Topic("BuildZeroPreviewerErrorTopic", {
-    name: "LambdaErrorTopic",
-  });
 
   new aws.lambda.FunctionEventInvokeConfig("BuildZeroPreviewerInvokeConfig", {
     functionName: func.name,
