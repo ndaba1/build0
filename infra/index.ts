@@ -169,6 +169,7 @@ if ($app.stage === "dev") {
       onFailure: { destination: lambdaFailureQueue.arn },
       onSuccess: { destination: lambdaSuccessQueue.arn },
     },
+    maximumRetryAttempts: 0,
   });
 }
 
