@@ -104,15 +104,15 @@ if ($app.stage === "dev") {
     name: "LambdaDLQ",
   });
 
-  const lambdaSuccessTopic = new aws.sns.Topic(
-    "BuildZeroPreviewerSuccessTopic",
+  const lambdaSuccessQueue = new aws.sqs.Queue(
+    "BuildZeroPreviewerSuccessQueue",
     {
-      name: "LambdaSuccessTopic",
+      name: "LambdaSuccessQueue",
     }
   );
 
-  const lambdaFailureTopic = new aws.sns.Topic("BuildZeroPreviewerErrorTopic", {
-    name: "LambdaErrorTopic",
+  const lambdaFailureQueue = new aws.sqs.Queue("BuildZeroPreviewerErrorQueue", {
+    name: "LambdaErrorQueue",
   });
 
   const fn = docBucket.subscribe(
@@ -148,11 +148,11 @@ if ($app.stage === "dev") {
       permissions: [
         {
           actions: ["sqs:*"],
-          resources: [lambdaDlq.arn],
-        },
-        {
-          actions: ["sns:*"],
-          resources: [lambdaFailureTopic.arn, lambdaSuccessTopic.arn],
+          resources: [
+            lambdaDlq.arn,
+            lambdaSuccessQueue.arn,
+            lambdaFailureQueue.arn,
+          ],
         },
       ],
     } satisfies sst.aws.FunctionArgs,
@@ -166,8 +166,8 @@ if ($app.stage === "dev") {
   new aws.lambda.FunctionEventInvokeConfig("BuildZeroPreviewerInvokeConfig", {
     functionName: func.name,
     destinationConfig: {
-      onFailure: { destination: lambdaFailureTopic.arn },
-      onSuccess: { destination: lambdaSuccessTopic.arn },
+      onFailure: { destination: lambdaFailureQueue.arn },
+      onSuccess: { destination: lambdaSuccessQueue.arn },
     },
   });
 }
