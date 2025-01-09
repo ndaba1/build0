@@ -200,6 +200,8 @@ export const handler = async (event: S3Event) => {
             })
             .where(eq(jobs.id, imageJobId));
         }
+
+        throw e;
       }
     })
   );
