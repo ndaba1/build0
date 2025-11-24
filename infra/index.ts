@@ -13,14 +13,6 @@ import { cloudfrontFunctionCode } from "./utils";
 // no uppercase to avoid CNAME errors
 const nano = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10);
 
-const cloudfrontFn = new aws.cloudfront.Function(
-  "BuildZeroCloudfrontServerFn",
-  {
-    code: cloudfrontFunctionCode,
-    runtime: "cloudfront-js-2.0",
-  }
-);
-
 export const website = new sst.aws.Nextjs("BuildZeroWebApp", {
   vpc,
   link: [database, docBucket, imageBucket, redis, userPool, userPoolClient],
@@ -32,40 +24,18 @@ export const website = new sst.aws.Nextjs("BuildZeroWebApp", {
       $app.stage === "dev" ? ["api.build0.dev", "files.build0.dev"] : undefined,
     redirects: $app.stage === "dev" ? ["www.build0.dev"] : undefined,
   },
+  edge: {
+    viewerRequest: {
+      injection: cloudfrontFunctionCode,
+    },
+  },
   transform: {
     cdn: {
       wait: false, // since we have pre-computed domains
-      transform: {
-        distribution(args, opts, name) {
-          args.defaultCacheBehavior = {
-            ...args.defaultCacheBehavior,
-            functionAssociations: [
-              {
-                eventType: "viewer-request",
-                functionArn: cloudfrontFn.arn,
-              },
-            ],
-          };
-
-          const behaviors =
-            args.orderedCacheBehaviors as unknown as aws.types.input.cloudfront.DistributionOrderedCacheBehavior[];
-          args.orderedCacheBehaviors = behaviors.map((behavior) => {
-            return {
-              ...behavior,
-              functionAssociations: [
-                {
-                  eventType: "viewer-request",
-                  functionArn: cloudfrontFn.arn,
-                },
-              ],
-            };
-          });
-        },
-      },
     },
   },
   environment: {
-    NEXT_PUBLIC_AWS_REGION: "us-east-1",
+    NEXT_PUBLIC_AWS_REGION: aws.config.region,
     NEXT_PUBLIC_USER_POOL_ID: userPool.id,
     NEXT_PUBLIC_USER_POOL_CLIENT_ID: userPoolClient.id,
     NEXT_PUBLIC_POSTHOG_KEY: posthogKey.value,
