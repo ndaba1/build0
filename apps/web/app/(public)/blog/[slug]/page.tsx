@@ -6,6 +6,8 @@ import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { Header } from "../../header";
 
+export const revalidate = 30;
+
 export async function generateStaticParams() {
   const entries = await getBlogEntries();
 
